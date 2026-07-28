@@ -87,10 +87,12 @@ unfold func_EQ, func_LE. intros. apply RelSame_RelIncl.
 assumption.
 Qed.
 
-Record pt {F : Subset T} :=
-  { pt_here : Inhabited F
-  ; pt_local : forall {b c}, F b -> F c -> Inhabited ((eq b ↓ eq c) ∩ F)
-  ; pt_cov : forall {b V}, F b -> b <| V -> Inhabited (F ∩ V)
+Record pt@{IP} {F : Subset@{AT PT} T} :=
+  { pt_here : Inhabited@{AT PT IP} F
+  ; pt_local : forall {b c}, F b -> F c ->
+      Inhabited@{AT PT IP} ((eq b ↓ eq c) ∩ F)
+  ; pt_cov : forall {b V}, F b -> b <| V ->
+      Inhabited@{AT PT IP} (F ∩ V)
   }.
 
 Arguments pt F : clear implicits.

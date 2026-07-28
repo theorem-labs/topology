@@ -26,7 +26,7 @@ Definition pointwise_rel@{P Q PQ} (f : Type@{P} -> Type@{Q} -> Type@{PQ})
 Definition Intersection@{P Q PQ} : Subset@{A P} A -> Subset@{A Q} A -> Subset@{A PQ} A := pointwise_op prod.
 Definition Union@{P Q PQ} : Subset@{A P} A -> Subset@{A Q} A -> Subset@{A PQ} A := pointwise_op sum.
 
-Inductive Inhabited@{P} {U : Subset@{A P} A} :=
+Inductive Inhabited@{P IP} {U : Subset@{A P} A} : Type@{IP} :=
   Inhabited_intro : forall a : A, In U a -> Inhabited.
 End Defns.
 

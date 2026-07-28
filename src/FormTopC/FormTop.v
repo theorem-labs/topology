@@ -65,9 +65,10 @@ Arguments t : clear implicits.
 (** Definition of a formal cover that also has a positivity predicate. *)
 (** We bundle the positivity predicate, because if there is one,
     it's unique. *)
-Class tPos@{} :=
+Class tPos@{IP} :=
   { Pos : Subset@{A P} A
-  ; mono : forall a U, Pos a -> a <| U -> Inhabited@{A P} (U ∩ Pos)
+  ; mono : forall a U, Pos a -> a <| U ->
+      Inhabited@{A P IP} (U ∩ Pos)
   ; positive : forall a U, (Pos a -> a <| U) -> a <| U
   }.
 
@@ -297,11 +298,12 @@ Definition gsubset_equiv@{API} (U V : Open A) : U === V
   -> forall a, GCov a U <--> GCov a V
   := gsubset_equiv_MUniv@{API API} U V.
 
-Class gtPos@{} :=
+Class gtPos@{IP} :=
   { gPos : Subset@{A P} A
   ; gmono_le : forall a b, a <= b -> gPos a -> gPos b
   ; gmono_ax : forall b (i : PreISpace.Ix A b), forall a, a <= b ->
-    gPos a -> Inhabited@{A P} ((eq a ↓ PreISpace.C A b i) ∩ gPos)
+    gPos a ->
+    Inhabited@{A P IP} ((eq a ↓ PreISpace.C A b i) ∩ gPos)
   ; gpositive : forall a U, (gPos a -> GCovL a U) -> GCovL a U
   }.
 

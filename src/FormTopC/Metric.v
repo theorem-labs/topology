@@ -28,7 +28,7 @@ Universes A P I.
 
 Context {MS : MetricSpace}.
 
-Definition M@{} : Type@{A} := msp_is_setoid MS.
+Definition M@{} : Type@{A} := RSetoid.st_car (msp_as_RSetoid MS).
 
 Definition Ball : Type@{A} := (M * Qpos)%type.
 
@@ -46,9 +46,17 @@ Proof.
 intros. unfold lt_ball.
 destruct (Qpos_lt_plus H).
 destruct (Qpos_smaller x0) as [x0' x0'small].
-exists x0'. split. apply ball_refl.
-rewrite Qplus_comm. rewrite q.
-apply Qplus_lt_r. assumption.
+exists x0'. split.
+- apply ball_refl. apply Qlt_le_weak. apply Qpos_prf.
+-
+assert ((x0' + eps)%Q == (x0' + eps)%Q) as Hleft by reflexivity.
+assert ((x0 + eps)%Q == eps') as Hright.
+{ eapply Qeq_trans. apply Qplus_comm. symmetry. exact q. }
+exact
+  (proj1
+     (Qlt_compat (x0' + eps)%Q (x0' + eps)%Q Hleft
+        (x0 + eps)%Q eps' Hright)
+     (proj2 (Qplus_lt_l x0' x0 eps) x0'small)).
 Qed.
 
 Instance PreO : PreO.t@{A P} le_ball.
@@ -78,6 +86,8 @@ Existing Instance PreO.PreOrder_I.
 
 Local Instance PreOrder_le_ball : Transitive le_ball := 
   PreOrder_Transitive.
+Local Instance Reflexive_le_ball : Reflexive le_ball :=
+  fun x => @PreO.le_refl _ _ PreO x.
 
 Lemma lt_le_weak : forall a b,
   lt_ball a b -> le_ball a b.
@@ -135,7 +145,7 @@ Proof.
 unfold le_ball. intros H x H0. destruct a, c.
 simpl in *. apply ball_closed.
 intros. 
-specialize (H d). destruct H as (d' & balld' & qd').
+specialize (H (mkQpos H1)). destruct H as (d' & balld' & qd').
 apply ball_weak_le with (d' + q)%Qpos. 
 apply Qlt_le_weak.
 simpl. rewrite (Qplus_comm q0 d). assumption.
@@ -148,8 +158,9 @@ Lemma le_ball_center : forall x (eps eps' : Qpos),
 Proof.
 intros. simpl. intros.
 destruct (Qpos_smaller e) as [e' e'prf].
-exists e'. split. apply ball_refl.
-apply Qplus_lt_le_compat; assumption.
+exists e'. split.
+- apply ball_refl. apply Qlt_le_weak. apply Qpos_prf.
+- apply Qplus_lt_le_compat; assumption.
 Qed.
 
 Lemma lt_ball_shrink Bx y eps :
@@ -213,6 +224,10 @@ Definition MetricPS@{} : PreISpace.t@{A P I} :=
   {| PreISpace.S := MetricPO
    ; PreISpace.C := CUL
   |}.
+Local Instance MetricPS_le_Reflexive :
+  Reflexive (le MetricPS) := Reflexive_le_ball.
+Local Instance MetricPS_le_Transitive :
+  Transitive (le MetricPS) := PreOrder_le_ball.
 
 Lemma shrink_ball (b : Ball) :
   { b' : Ball & lt_ball b' b }.
@@ -278,9 +293,9 @@ intros H x H0.
 destruct a, c. simpl in *. induction H0.
 destruct (Qpos_lt_plus q1) as (diff & diffeq).
 destruct (H diff) as (d & balld & dlt).
-econstructor.
-Focus 2. eapply ball_triangle. apply ball_sym.
-eassumption. eassumption.
+econstructor 1 with (d + e)%Qpos.
+2: { eapply ball_triangle. apply ball_sym.
+     eassumption. eassumption. }
 rewrite diffeq in dlt.
 apply Qplus_lt_r with diff.
 eapply Qlt_compat. 3: apply dlt.
@@ -309,6 +324,7 @@ Lemma o_ball_refl : forall {X : MetricSpace} (x : X) eps,
 Proof.
 intros. destruct (Qpos_smaller eps). 
 econstructor. eassumption. apply ball_refl.
+apply Qlt_le_weak. apply Qpos_prf.
 Qed.
 
 Lemma o_ball_sym : forall {X : MetricSpace} (x y : X) eps,
@@ -354,6 +370,18 @@ Definition Yoneda (x : X) : Subset (Ball X) :=
   fun B => let (y, eps) := B in o_ball eps x y.
 
 Existing Instance PreO.
+Local Instance Lipschitz_MetricPS_le_Reflexive :
+  Reflexive (le (@MetricPS X)) :=
+  fun x => @PreO.le_refl _ _ (@PreO X) x.
+Local Instance Lipschitz_MetricPS_le_Transitive :
+  Transitive (le (@MetricPS X)) :=
+  fun x y z => @PreO.le_trans _ _ (@PreO X) x y z.
+Local Instance Lipschitz_X_MetricPO_le_Reflexive :
+  Reflexive (le (@MetricPO X)) :=
+  fun x => @PreO.le_refl _ _ (@PreO X) x.
+Local Instance Lipschitz_Y_MetricPO_le_Reflexive :
+  Reflexive (le (@MetricPO Y)) :=
+  fun x => @PreO.le_refl _ _ (@PreO Y) x.
 
 Variable f : X -> Y.
 Variable k : Qpos.
@@ -395,7 +423,9 @@ Lemma lift_f_ap_lt : forall x (eps eps' : Qpos),
 Proof.
 intros. 
 simpl. destruct (Qpos_lt_plus H).
-exists (k * (Qpos_one_half * x0))%Qpos. split. apply ball_refl. rewrite q.
+exists (k * (Qpos_one_half * x0))%Qpos. split.
+- apply ball_refl. apply Qlt_le_weak. apply Qpos_prf.
+- rewrite q.
 rewrite Qplus_comm. simpl. 
 rewrite <- Qmult_plus_distr_r.
 apply Qmult_lt_compat_l. apply Qpos_prf.
@@ -441,8 +471,9 @@ Proof.
 destruct Bx as [m q]. 
 exists (f m, q + k * q)%Qpos. simpl.
 destruct (Qpos_smaller q).
-exists x. split. apply ball_refl.
-apply Qplus_lt_l. assumption.
+exists x. split.
+- apply ball_refl. apply Qlt_le_weak. apply Qpos_prf.
+- apply (proj2 (Qplus_lt_l x q (k * q)%Q)). assumption.
 Qed.
 
 Arguments M : clear implicits.
