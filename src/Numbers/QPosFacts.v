@@ -1,8 +1,17 @@
 Require Import
   Numbers.QFacts
+  CoRN.model.structures.Qpossec
   CoRN.model.structures.QposInf.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
+
+(** CoRN declares [Coercion Qpos2QposInf : Qpos >-> QposInf], but since
+    [Qpos] is a transparent abbreviation for [sig (Qlt 0)] the coercion is
+    no longer found by class inference (there is "no path between Qpos and
+    QposInf").  Re-declare it through an opaque-headed wrapper. *)
+Definition Qpos_QposInf (x : Qpos) : QposInf := Qpos2QposInf x.
+Coercion Qpos_QposInf : Qpos >-> QposInf.
 
 Definition Qpos_two : Qpos := Qpos_one + Qpos_one.
 

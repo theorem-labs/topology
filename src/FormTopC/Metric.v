@@ -20,6 +20,7 @@ Require Import
 
 Set Asymmetric Patterns.
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 
 Local Open Scope FT.
 
@@ -28,7 +29,7 @@ Universes A P I.
 
 Context {MS : MetricSpace}.
 
-Definition M@{} : Type@{A} := msp_is_setoid MS.
+Definition M@{} : Type@{A} := RSetoid.st_car (msp_as_RSetoid MS).
 
 Definition Ball : Type@{A} := (M * Qpos)%type.
 
@@ -46,12 +47,12 @@ Proof.
 intros. unfold lt_ball.
 destruct (Qpos_lt_plus H).
 destruct (Qpos_smaller x0) as [x0' x0'small].
-exists x0'. split. apply ball_refl.
+exists x0'. split. apply ball_refl. apply Qpos_nonneg.
 rewrite Qplus_comm. rewrite q.
 apply Qplus_lt_r. assumption.
 Qed.
 
-Instance PreO : PreO.t@{A P} le_ball.
+#[global] Instance PreO : PreO.t@{A P} le_ball.
 Proof.
 constructor.
 - intros []. unfold le_ball. intros.
@@ -74,7 +75,7 @@ constructor.
   rewrite (one_half_sum e). reflexivity.
 Qed.
 
-Existing Instance PreO.PreOrder_I.
+#[global] Existing Instance PreO.PreOrder_I.
 
 Local Instance PreOrder_le_ball : Transitive le_ball := 
   PreOrder_Transitive.
@@ -134,8 +135,8 @@ Lemma le_ball_applies {a c} :
 Proof.
 unfold le_ball. intros H x H0. destruct a, c.
 simpl in *. apply ball_closed.
-intros. 
-specialize (H d). destruct H as (d' & balld' & qd').
+intros d Hd.
+specialize (H (mkQpos Hd)). destruct H as (d' & balld' & qd').
 apply ball_weak_le with (d' + q)%Qpos. 
 apply Qlt_le_weak.
 simpl. rewrite (Qplus_comm q0 d). assumption.
@@ -148,7 +149,7 @@ Lemma le_ball_center : forall x (eps eps' : Qpos),
 Proof.
 intros. simpl. intros.
 destruct (Qpos_smaller e) as [e' e'prf].
-exists e'. split. apply ball_refl.
+exists e'. split. apply ball_refl. apply Qpos_nonneg.
 apply Qplus_lt_le_compat; assumption.
 Qed.
 
@@ -278,9 +279,8 @@ intros H x H0.
 destruct a, c. simpl in *. induction H0.
 destruct (Qpos_lt_plus q1) as (diff & diffeq).
 destruct (H diff) as (d & balld & dlt).
-econstructor.
-Focus 2. eapply ball_triangle. apply ball_sym.
-eassumption. eassumption.
+apply (In_o_ball (d + e)%Qpos).
+2: { eapply ball_triangle. apply ball_sym. eassumption. eassumption. }
 rewrite diffeq in dlt.
 apply Qplus_lt_r with diff.
 eapply Qlt_compat. 3: apply dlt.
@@ -308,7 +308,7 @@ Lemma o_ball_refl : forall {X : MetricSpace} (x : X) eps,
   o_ball eps x x.
 Proof.
 intros. destruct (Qpos_smaller eps). 
-econstructor. eassumption. apply ball_refl.
+econstructor. eassumption. apply ball_refl. apply Qpos_nonneg.
 Qed.
 
 Lemma o_ball_sym : forall {X : MetricSpace} (x y : X) eps,
@@ -353,7 +353,7 @@ Context {X Y : MetricSpace}.
 Definition Yoneda (x : X) : Subset (Ball X) :=
   fun B => let (y, eps) := B in o_ball eps x y.
 
-Existing Instance PreO.
+#[global] Existing Instance PreO.
 
 Variable f : X -> Y.
 Variable k : Qpos.
@@ -395,7 +395,7 @@ Lemma lift_f_ap_lt : forall x (eps eps' : Qpos),
 Proof.
 intros. 
 simpl. destruct (Qpos_lt_plus H).
-exists (k * (Qpos_one_half * x0))%Qpos. split. apply ball_refl. rewrite q.
+exists (k * (Qpos_one_half * x0))%Qpos. split. apply ball_refl. apply Qpos_nonneg. rewrite q.
 rewrite Qplus_comm. simpl. 
 rewrite <- Qmult_plus_distr_r.
 apply Qmult_lt_compat_l. apply Qpos_prf.
@@ -441,7 +441,7 @@ Proof.
 destruct Bx as [m q]. 
 exists (f m, q + k * q)%Qpos. simpl.
 destruct (Qpos_smaller q).
-exists x. split. apply ball_refl.
+exists x. split. apply ball_refl. apply Qpos_nonneg.
 apply Qplus_lt_l. assumption.
 Qed.
 
@@ -584,7 +584,7 @@ apply uc_prf. eapply ball_ex_weak_le.
 apply Qpossmaller_prf. simpl. assumption.
 Qed.
 
-Existing Instances PreO PreO.PreOrder_I.
+#[global] Existing Instances PreO PreO.PreOrder_I.
 
 Definition lift_uc : Cont.map (toPSL (IGS (@Metric X))) 
   (toPSL (IGS (@Metric Y))) :=

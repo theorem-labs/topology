@@ -6,13 +6,15 @@ Require Import
   Numbers.QPosFacts
   CoRN.metric2.Metric
   FormTopC.Metric
+  FormTopC.FormalSpace
   CoRN.model.totalorder.QposMinMax
   QArith.Qminmax
   CoRN.algebra.COrdAbs
   CoRN.model.ordfields.Qordfield
   CoRN.model.metric2.Qmetric
   CoRN.metric2.ProductMetric
-  Algebra.SetsC.
+  Algebra.SetsC
+  Psatz.
 
 Definition unit_RSetoid : RSetoid.
 Proof.
@@ -26,19 +28,23 @@ Definition MOne : MetricSpace.
 Proof.
 unshelve econstructor.
 - exact (unit_RSetoid).
-- exact (fun _ _ _ => True).
-- simpl. intros. split; intros; auto.
+- exact (fun e _ _ => 0 <= e).
+- simpl. intros e d x y H. rewrite H. split; auto.
 - simpl. constructor.
-  + unfold Reflexive. auto.
-  + unfold Symmetric. auto.
-  + auto.
-  + auto.
-  + simpl. auto.
+  + intros e He x. exact He.
+  + intros e x y H. exact H.
+  + intros e1 e2 a b c H H0. lra.
+  + intros e a b H. apply Qnot_lt_le. intros He.
+    specialize (H ((- e) * (1 # 2))).
+    lra.
+  + intros e a b H. exact H.
+  + intros e a b H. apply Qnot_lt_le. intros He.
+    apply H. intros Habs. lra.
 Defined.
 
 Import Metric.
 
-Existing Instances PreO PreO.PreOrder_I.
+#[global] Existing Instances PreO PreO.PreOrder_I.
 
 Lemma tt_cont : IGCont.pt Metric (fun _ : Ball MOne => True).
 Proof.
@@ -78,6 +84,7 @@ Proof.
 unfold Lipschitz.
 simpl. intros. destruct x, x'.
 apply ball_refl.
+apply Qmult_le_0_compat. apply Qpos_nonneg. assumption.
 Qed.
 
 (** Applying this map to the unique point in the
@@ -126,19 +133,7 @@ Lemma Qball_between :
  forall e a b0 b1, Qball e b0 b1 -> b0 <= a <= b1 -> Qball e a b1.
 Proof.
   intros e a b0 b1 H [H1 H2].
-  unfold Qball in *.
-  unfold AbsSmall in *.
-  split.
-   apply Qle_trans with (b0-b1).
-    tauto.
-   apply (minus_resp_leEq _ b0).
-   assumption.
-  apply Qle_trans with 0.
-   apply (shift_minus_leEq _ a).
-   stepr b1.
-    assumption.
-   simpl; ring.
-  apply Qpos_nonneg.
+  unfold Qball, QAbsSmall in *. lra.
 Qed.
 
 

@@ -1,4 +1,5 @@
 Require Import
+  CoRN.model.structures.Qpossec
   CoRN.model.structures.QposInf
 
   Prob.StdLib
@@ -10,6 +11,7 @@ Require Import
   Algebra.PreOrder.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 
 Local Open Scope FT.
 
@@ -35,7 +37,7 @@ Definition C (q : QposInf) (ix : Ix q) : Subset QposInf
   | IxFinite x => fun q' => lt q' x
   end.
 
-Instance PO : PreO.t le.
+#[global] Instance PO : PreO.t le.
 Proof.
 constructor; unfold le; intros.
 - destruct x; simpl. apply Qle_refl. constructor.
@@ -43,7 +45,7 @@ constructor; unfold le; intros.
  eapply Qle_trans; eassumption.
 Qed.
 
-Existing Instance PreO.PreOrder_I.
+#[global] Existing Instance PreO.PreOrder_I.
 
 Lemma lt_le_trans (x y z : QposInf) : x < y -> y <=[PosURPO] z -> x < z.
 Proof.
@@ -63,7 +65,7 @@ Definition PosUR : PreISpace.t :=
    ; PreISpace.C := C
   |}.
 
-Instance loc : FormTop.localized PosUR.
+#[global] Instance loc : FormTop.localized PosUR.
 Proof.
 unfold FormTop.localized.
 intros. destruct i; simpl in *.
