@@ -35,7 +35,7 @@ Definition eq_Open := PO.eq_PreO le_Open.
     S * T ~~> Σ   -->    S ~~> Open T  
 *)
 
-Existing Instances Sierpinski.ops Sierpinski.SML.
+#[global] Existing Instances Sierpinski.ops Sierpinski.SML.
 
 Let prod_le := prod_op leS leT.
 Let prodC := Product.C _ _ IxS IxT CS CT.
@@ -72,7 +72,7 @@ Qed.
 
 Local Instance PO_le_eq : PO.t le_Open eq_Open
   := PO.fromPreO _. 
-Existing Instance PO.fromPreO.
+#[global] Existing Instance PO.fromPreO.
 
 (** This seems really suspicious. It's probably wrong. *)
 Theorem absF_cont : Cont.t leS le_Open CovS OpenCov absF.
@@ -134,7 +134,7 @@ Definition open_abstract_mp {Γ A : IGT}
      : Cont.map (S Γ) (S (Open A))
   := Scott.absF (leT := le A) (IxT := Ix A) (CT := C A) f.
 
-Existing Instances Bundled.PO Bundled.local.
+#[global] Existing Instances Bundled.PO Bundled.local.
 
 Definition open_abstract_mp_ok {Γ A : IGT}
   (f : Cont.map (S (Γ * A)) (S Σ))

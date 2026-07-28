@@ -1,4 +1,5 @@
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 Set Asymmetric Patterns.
 
 Require Import Coq.Lists.List.

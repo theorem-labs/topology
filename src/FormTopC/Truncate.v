@@ -11,6 +11,7 @@ Require Import
   FormTopC.Cont.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 Set Asymmetric Patterns.
 
 Local Open Scope FT.

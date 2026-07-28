@@ -9,6 +9,7 @@ Require Import
   FormTopC.FormalSpace.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 Set Asymmetric Patterns.
 
 Local Open Scope FT.
@@ -79,7 +80,7 @@ Inductive InDisjunct {ix : Ix} {U : Open (A ix)} : Subset S' :=
 Arguments InDisjunct {ix} U.
 
 Definition C' (p : S') (ix : Ix' p) : Subset S' := match ix with
-  | MkIx ix s ax => InDisjunct (PreISpace.C (A ix) s ax)
+  | @MkIx ix s ax => InDisjunct (PreISpace.C (A ix) s ax)
   end.
 
 Definition le' : S' -> S' -> Type := SomeOpen_le (X := A).

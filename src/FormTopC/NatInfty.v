@@ -10,6 +10,7 @@ Require Import
   FormTopC.Discrete.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 (* The Alexandroff compactification of the natural numbers. *)
 
 Inductive O : Set := 
@@ -71,21 +72,21 @@ Lemma pt_infty : is_pt infty.
 Proof.
 constructor; intros.
 - exists (MoreThan 0). constructor.
-- destruct H, H0. exists (MoreThan (max n n0)). 
+- destruct X, X0. exists (MoreThan (max n n0)). 
   econstructor. split; le_down; constructor.
-  apply Max.le_max_l. apply Max.le_max_r.
+  apply PeanoNat.Nat.le_max_l. apply PeanoNat.Nat.le_max_r.
   constructor.
-- destruct H. inv H0. constructor.
+- destruct X. inv X0. constructor.
 - destruct j as [m]. simpl.
-  simpl in H. destruct H0 as [n].
-  inv H.
-  destruct (Compare_dec.le_lt_eq_dec _ _ H2).
+  simpl in X. destruct X0 as [n].
+  inv X.
+  destruct (Compare_dec.le_lt_eq_dec _ _ H1).
   + exists (MoreThan n). split. constructor.
     split. le_down. simpl. econstructor. reflexivity.
     exists (MoreThan (S m)).  constructor.
     constructor. assumption.
   + subst. exists (MoreThan (S n)). split.  constructor.
-    split. le_down. simpl. constructor. apply Le.le_n_Sn.
+    split. le_down. simpl. constructor. apply PeanoNat.Nat.le_succ_diag_r.
     exists (MoreThan (S n)). constructor.
     simpl. constructor. reflexivity.
 Qed.
@@ -98,8 +99,8 @@ constructor; unfold exactly; intros.
   reflexivity.
 - etransitivity; eassumption.
 - destruct j as [m]. simpl.
-  inv H0.
-  + inv H. 
+  inv H.
+  + inv X. 
   exists (Exactly n). constructor. reflexivity.
   destruct (Compare_dec.lt_eq_lt_dec (S m) n) as [[LT | EQ] | GT].
     * split. le_down. simpl. constructor. assumption. 
@@ -108,9 +109,9 @@ constructor; unfold exactly; intros.
     * subst. split. le_down. simpl. constructor.
       assumption. exists (Exactly (S m)). constructor.
       reflexivity.
-    * exfalso. eapply Lt.le_not_lt. 2: eassumption.
-      etransitivity. 2: eapply H2. apply Le.le_n_S. assumption. 
-  + inv H. exists (Exactly n0).
+    * exfalso. eapply PeanoNat.Nat.le_ngt. 2: eassumption.
+      etransitivity. 2: eapply H1. apply (proj1 (PeanoNat.Nat.succ_le_mono _ _)). assumption.
+  + inv X. exists (Exactly n0).
     split. constructor. reflexivity.
     split. le_down. reflexivity.
     exists (MoreThan (S m)). constructor.
@@ -122,17 +123,17 @@ Proof.
 apply FormTop.gall_Pos.
 intros b i a. induction a.
 - (** MoreThan n - take the point infty as an example. *)
-  intros H.
-  pose proof (IGCont.pt_cov pt_infty (MoreThan n) b i H).
+  intros X.
+  pose proof (IGCont.pt_cov pt_infty (MoreThan n) b i X).
   assert (H1 : infty (MoreThan n)) by constructor.
-  specialize (H0 H1).
-  destruct H0. destruct i0. eexists; eassumption.
+  specialize (X0 H1).
+  destruct X0. destruct i0. eexists; eassumption.
 - (** Exactly n - take the point (exactly n) as an example. *)
-  intros H.
-  pose proof (IGCont.pt_cov (pt_exactly n) (Exactly n) b i H).
+  intros X.
+  pose proof (IGCont.pt_cov (pt_exactly n) (Exactly n) b i X).
   assert (H1 : exactly n (Exactly n)). 
   unfold exactly. reflexivity.
-  specialize (H0 H1). destruct H0. destruct i0.
+  specialize (X0 H1). destruct X0. destruct i0.
   eexists; eassumption.
 Qed.
 

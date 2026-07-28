@@ -37,7 +37,7 @@ Definition Meet : PreISpace.t :=
    ; PreISpace.C := MC
   |}.
 
-Existing Instance GCovL_formtop.
+#[global] Existing Instance GCovL_formtop.
 
 Lemma Meet_AxiomSetRefine_le (ix : Ix)
   : AxiomSetRefine (C ix) MC.

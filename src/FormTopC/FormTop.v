@@ -6,6 +6,7 @@
   Prob.StdLib.
 Set Asymmetric Patterns.
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 
 (** Formal topologies. *)
 
@@ -119,7 +120,7 @@ Proof.
 intros. split; apply monotone; firstorder.
 Qed.
 
-Instance Cov_Proper  :
+#[global] Instance Cov_Proper  :
   Proper (le A --> Included ==> arrow) (PreSpace.Cov A).
 Proof.
 unfold Proper, respectful, arrow. intros.
@@ -128,7 +129,7 @@ eapply le_left; try eassumption.
 eapply monotone; eassumption.
 Qed.
 
-Instance Cov_Proper3  :
+#[global] Instance Cov_Proper3  :
   Proper (le A ==> Included --> flip arrow) (PreSpace.Cov A).
 Proof.
 unfold Proper, respectful, arrow, flip. intros.
@@ -136,7 +137,7 @@ eapply le_left; try eassumption.
 eapply monotone; eassumption.
 Qed.
 
-Instance Cov_Proper2 : Proper (eq ==> Same_set ==> iffT) (PreSpace.Cov A).
+#[global] Instance Cov_Proper2 : Proper (eq ==> Same_set ==> iffT) (PreSpace.Cov A).
 Proof.
 unfold Proper, respectful. intros x y xy x' y' xy'. subst.
 split; intros. apply (monotone x'). 
@@ -377,7 +378,7 @@ Qed.
 (** Theorem 3.6 of [1].
     In fact, the formal cover that we defined based on the axiom set 
     indeed satistifes the requirements of being a formal topology. *)
-Instance GCov_formtop@{} : t toPSUL.
+#[global] Instance GCov_formtop@{} : t toPSUL.
 Proof.
 unfold localized in loc.
 constructor.
@@ -501,7 +502,7 @@ apply Included_impl. intros. subst.
 split. exists x; reflexivity. exists c. reflexivity.
 assumption. reflexivity.
 Qed.
-Existing Instance Llocalized.
+#[global] Existing Instance Llocalized.
 
 Theorem cov_equiv_UMore : GCovL A ==== GCov Localized.
 Proof.
@@ -524,7 +525,7 @@ intros a U. split; intros H.
 Qed.
 
 Definition cov_equiv@{} : GCovL A ==== GCov Localized
-  := cov_equiv_UMore@{API API API}.
+  := cov_equiv_UMore@{API API}.
 
 Local Instance GCov_Proper : Proper (le A --> Included ==> arrow)
   (GCov Localized). 

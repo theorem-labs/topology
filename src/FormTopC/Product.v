@@ -12,9 +12,10 @@ Require Import
   Algebra.FreeLattice.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 Set Asymmetric Patterns.
 
-Existing Instances 
+#[global] Existing Instances 
   FormTop.GCov_formtop 
   FormalSpace.IGT_PreO 
   FormalSpace.IGTFT.
@@ -59,9 +60,9 @@ Arguments ExtSubset s {ix} C.
 
 Definition C'@{} : forall (p : ProdPO), Ix' p -> Subset@{A P} ProdPO :=
   fun p ix' => match ix' with
-  | Slice x ax xs => ExtSubset xs (PreISpace.C _ _ ax)
+  | @Slice x ax xs => ExtSubset xs (PreISpace.C _ _ ax)
   | DimUnion xs ix => @ExtSubset xs ix (fun _ => True)
-  | ProdStable ix a a' xs => @ExtSubset xs ix (eq a ↓ eq a')
+  | @ProdStable ix a a' xs => @ExtSubset xs ix (eq a ↓ eq a')
   end.
 
 Definition Prod@{} : PreISpace.t@{A P I} :=
@@ -70,7 +71,7 @@ Definition Prod@{} : PreISpace.t@{A P I} :=
    ; PreISpace.C := C'
   |}.
 
-Instance Sum_PO : PreO.t (le (SomeOpen X)).
+#[global] Instance Sum_PO : PreO.t (le (SomeOpen X)).
 Proof.
 unshelve eapply PreOrder.Sum_PO. eassumption.
 Qed.
@@ -202,7 +203,7 @@ Definition univ : Cont.map A Prodt :=
   Each (fun x : SomeOpen X => let (ix, uix) := x in
     (f ix) uix a) out.
 
-Existing Instances FormalSpace.isFT.
+#[global] Existing Instances FormalSpace.isFT.
 
 Lemma univ_le_left (a : A) (b : Prodt) (c : A)
   : a <=[A] c -> univ b c -> univ b a.
@@ -236,7 +237,7 @@ eexists. 2: eassumption.
 unfold In. le_down. reflexivity.
 Qed.
 
-Existing Instances FormalSpace.PO.
+#[global] Existing Instances FormalSpace.PO.
 
 Import ListNotations.
 
@@ -347,7 +348,7 @@ intros. split; intros H.
 Qed.
 *)
 
-Existing Instance GCovL_formtop.
+#[global] Existing Instance GCovL_formtop.
 
 Lemma Pos : FormTop.gtPos Prod.
 Proof.

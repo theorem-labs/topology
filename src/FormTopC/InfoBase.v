@@ -10,6 +10,7 @@ Require Import
   Prob.StdLib.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 Set Asymmetric Patterns.
 
 Local Open Scope Subset.
@@ -100,8 +101,9 @@ Section InfoBaseCont.
 
 Generalizable All Variables.
 
-Context {S : PreSpace.t} {POS : PreO.t (le (PreSpace.S S))}.
-Context {T : PreOrder} {POT : PreO.t (le T)}.
+Universes AS PS XS AT PT.
+Context {S : PreSpace.t@{AS PS XS}} {POS : PreO.t (le (PreSpace.S S))}.
+Context {T : PreOrder@{AT PT}} {POT : PreO.t (le T)}.
 
 Record ptNM {F : Subset T} : Type :=
   { ptNM_local : forall {a b}, F a -> F b -> 
@@ -112,7 +114,7 @@ Record ptNM {F : Subset T} : Type :=
 
 Arguments ptNM : clear implicits.
 
-Instance ptNM_proper : Proper ((eq ==> iffT) ==> iffT) ptNM.
+#[global] Instance ptNM_proper : Proper ((eq ==> iffT) ==> iffT) ptNM.
 Proof.
 Admitted.
 
@@ -124,7 +126,7 @@ Record tNM {F_ : Cont.map S (InfoBase.IB T)} :=
   ; NMle_right :  forall a b c, F_ b a -> b <=[T] c -> F_ c a
   ; NMlocal : forall {a b c}, F_ b a -> F_ c a -> 
      Inhabited ((fun t => F_ t a) ∩ (eq b ↓ eq c))
-  ; NMhere : forall s : S, In (union (fun _ => True) F_) s
+  ; NMhere : forall s : S, In (union@{AT AS PT PS} (fun _ => True) F_) s
   }.
 
 Arguments tNM : clear implicits.
@@ -168,7 +170,7 @@ Record pt {F : Subset T} : Type :=
 
 Arguments pt : clear implicits.
 
-Instance pt_proper : Proper ((eq ==> iffT) ==> iffT) pt.
+#[global] Instance pt_proper : Proper ((eq ==> iffT) ==> iffT) pt.
 Proof.
 Admitted.
 
@@ -249,7 +251,7 @@ Definition lift_binop (f : S -> T -> U)
   (result : U) (args : S * T) : Type :=
   let (l, r) := args in MeetLat.le (f l r) result.
 
-Existing Instances MeetLat.product_ops MeetLat.product.
+#[global] Existing Instances MeetLat.product_ops MeetLat.product.
 
 Theorem lift_binop_monotone : forall (f : S -> T -> U)
   (fmono : forall x x' y y', MeetLat.le x x' -> MeetLat.le y y' 
@@ -272,7 +274,7 @@ Section Compose.
 
 Context {S} {leS : crelation S} {SOps} {MLS : MeetLat.t S SOps}.
 
-Instance OneOps : MeetLat.Ops True := MeetLat.one_ops.
+#[global] Instance OneOps : MeetLat.Ops True := MeetLat.one_ops.
 
 Theorem to_pt : forall (F : Cont.map True S), t MeetLat.le F ->
   pt (fun s => F s I).
@@ -396,7 +398,7 @@ Module Sierpinski.
 
 Definition SierpPO : PreOrder :=
   {| PO_car := bool
-   ; le := Bool.leb |}.
+   ; le := Bool.le |}.
 
 Definition Sierp := InfoBase.IBInd SierpPO.
 
@@ -405,7 +407,7 @@ Definition sand : Cont.map (InfoBase.IBInd (ProdPO SierpPO SierpPO))
   Sierp :=
   InfoBaseCont.lift_binop andb.
 
-Existing Instances MeetLat.product MeetLat.product_ops.
+#[global] Existing Instances MeetLat.product MeetLat.product_ops.
 
 Theorem sand_cont : InfoBaseCont.t MeetLat.le sand.
 Proof.

@@ -11,6 +11,7 @@ Require Import
   Algebra.PreOrder.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 Set Asymmetric Patterns.
 
 Set Printing Universes.
@@ -28,7 +29,7 @@ Definition DiscretePO@{} : PreOrder@{A A} :=
    ; le := Logic.eq
   |}.
 
-Instance discretePO@{} : PreO.t Logic.eq := PreO.discrete@{A A} A.
+#[global] Instance discretePO@{} : PreO.t Logic.eq := PreO.discrete@{A A} A.
 
 Set Printing Universes.
 
@@ -50,7 +51,7 @@ split; intros H.
 - apply FormTop.refl. assumption.
 Qed.
 
-Instance isCov@{} : FormTop.t Disc.
+#[global] Instance isCov@{} : FormTop.t Disc.
 Proof.
 econstructor; try (simpl; eauto).
 - intros. subst. eauto.
@@ -130,7 +131,7 @@ Universes A A' B B'.
 Context {A : Type@{A}} {B : Type@{B}}.
 Definition discrF (f : A -> B) (y : B) (x : A) : Prop := f x = y.
 
-Instance POB@{} : PO.t Logic.eq Logic.eq := PO.discrete B.
+#[global] Instance POB@{} : PO.t Logic.eq Logic.eq := PO.discrete B.
 
 (*
 Theorem fCont (f : A -> B) :

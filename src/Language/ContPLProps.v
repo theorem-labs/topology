@@ -20,7 +20,7 @@ Section ContPLProps.
      }.
   
   
-  Existing Instance smd.
+  #[global] Existing Instance smd.
   
   Hint Rewrite
        (@compose_id_left _ _ _ _) (@compose_id_right _ _ _ _)

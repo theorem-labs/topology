@@ -7,6 +7,7 @@ Require Import
   Prob.StdLib.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 Local Open Scope Subset.
 Local Open Scope FT.
 
@@ -326,22 +327,23 @@ Arguments Cont.t : clear implicits.
 
 Module IGCont.
 Section IGCont.
+Universes AS PS XS AT PT XT.
 
-Context {S : PreSpace.t}.
-Context {T : PreISpace.t}.
+Context {S : PreSpace.t@{AS PS XS}}.
+Context {T : PreISpace.t@{AT PT XT}}.
 
 Context {POS : PreO.t (le S)}
         {POT : PreO.t (le T)}.
 
 Record t {F_ : Cont.map S (toPSL T)} :=
-  { here : forall a, a <|[S] union (fun _ : T => True) F_
+  { here : forall a, a <|[S] union@{AT AS PT PS} (fun _ : T => True) F_
   ; local : forall a b c, F_ b a -> F_ c a ->
-       a <|[S] union (eq b ↓ eq c) F_
+       a <|[S] union@{AT AS PT PS} (eq b ↓ eq c) F_
   ; le_left : forall a b c, a <=[S] c -> F_ b c -> F_ b a
   ; le_right :  forall a b c, F_ b a -> b <=[T] c -> F_ c a
   ; ax_right : forall a t t' (j : PreISpace.Ix T t'),
      t <= t' -> F_ t a -> 
-     a <|[S] union (eq t ↓ PreISpace.C T t' j) F_
+     a <|[S] union@{AT AS PT PS} (eq t ↓ PreISpace.C T t' j) F_
   }.
 
 Arguments t : clear implicits.
@@ -353,7 +355,7 @@ Context {FTS : FormTop.t S}.
 Theorem cont : forall F, t F -> Cont.t S (toPSL T) F.
 Proof.
 intros. constructor; intros.
-- apply (here X).
+- exact (here X a).
 - eapply le_left; eassumption.
 - apply local; assumption.
 - generalize dependent a. induction X1; intros.
@@ -372,7 +374,7 @@ Proof.
 intros.
 Admitted.
 
-Existing Instances union_Proper FormTop.Cov_Proper.
+#[global] Existing Instances union_Proper FormTop.Cov_Proper.
 
 Theorem converse : forall F, Cont.t S (toPSL T) F 
   -> t (@Cont.Sat S (toPSL T) F).
@@ -395,7 +397,7 @@ constructor; intros.
   pose proof (Cont.cov X (a := a) (b := b) (eq c)).
   eapply FormTop.monotone. Focus 2. apply X3.
   assumption. assumption.
-  apply union_eq.
+  exact (union_eq _ _ c F).
 - unfold Cont.Sat in X1. FormTop.etrans.
   apply (Cont.Cov_Sat (T := toPSL T)). Cont.ecov.
   apply FormTop.gle_infinity with _ j. assumption.

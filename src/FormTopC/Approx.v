@@ -13,6 +13,7 @@ Require Import
   Types.Setoid.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 
 Local Open Scope FT.
 
@@ -24,7 +25,7 @@ Local Open Scope Subset.
 Require Import FormTopC.Cont.
 
 
-Existing Instances Frame Frame.type
+#[global] Existing Instances Frame Frame.type
   FOps LOps.
 Local Open Scope loc.
 

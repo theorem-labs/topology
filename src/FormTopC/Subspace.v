@@ -11,8 +11,9 @@
 Local Open Scope Subset.
 Local Open Scope FT.
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 
-Existing Instances FormalSpace.FT FormalSpace.PreO
+#[global] Existing Instances FormalSpace.FT FormalSpace.PreO
   FormalSpace.Cov_Proper FormalSpace.Cov_Proper2
   FormalSpace.Cov_Proper3.
 

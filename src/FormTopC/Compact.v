@@ -26,6 +26,7 @@ Require Import
 
 Set Asymmetric Patterns.
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 Local Open Scope Subset.
 
 Module Compact.
@@ -36,7 +37,7 @@ Context {S : PreISpace.t}
 
 Definition le := JoinTop.leL (le := le S).
 
-Instance PO : PreO.t le := JoinTop.joinPreO.
+#[global] Instance PO : PreO.t le := JoinTop.joinPreO.
 
 Require Import Coq.Lists.List Types.List.
 Import ListNotations.
@@ -77,7 +78,7 @@ subst. induction X0. apply KNil.
 apply KCons. apply X. assumption. assumption.
 Qed.
 
-Instance KFinite_Proper : Proper (Same_set ==> eq ==> iffT)
+#[global] Instance KFinite_Proper : Proper (Same_set ==> eq ==> iffT)
   KFinite.
 Proof.
 unfold Proper, respectful. intros. split; intros.

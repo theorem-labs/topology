@@ -8,6 +8,7 @@ Require Import
   FormTopC.Subspace.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 Local Open Scope Subset.
 Local Open Scope FT.
 
@@ -40,7 +41,7 @@ Hypothesis f_intersect : forall (a : S) (b c : T),
  f_pasted b a -> f_pasted c a ->
   { t : T & (f_pasted t a * (eq b ↓ eq c) t)%type }.
 
-Existing Instances FormalSpace.FT FormalSpace.PreO
+#[global] Existing Instances FormalSpace.FT FormalSpace.PreO
   FormalSpace.Cov_Proper FormalSpace.Cov_Proper2
   FormalSpace.Cov_Proper3.
 

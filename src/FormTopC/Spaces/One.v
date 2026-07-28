@@ -11,6 +11,7 @@ Require Import
   FormTopC.FormalSpace.
 Set Asymmetric Patterns.
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 
 Local Open Scope FT.
 
@@ -37,7 +38,7 @@ Definition OnePS : PreISpace.t :=
 
 Definition OnePos (_ : unit) : Type := unit.
 
-Instance OnePos_Pos : FormTop.gtPos OnePS.
+#[global] Instance OnePos_Pos : FormTop.gtPos OnePS.
 Proof.
 apply gall_Pos. intros.
 destruct i.
@@ -82,7 +83,6 @@ Definition One_cont : Frame.morph (FOps One)
 Proof.
   unshelve eapply Frame.morph_easy.
 - eapply Frame.
-- eapply Frame.type.
 - unfold Proper, respectful. intros.
   apply One_Sat_eq in X. simpl. apply Same_set_iff. assumption.
 - simpl. unfold iffT; auto.

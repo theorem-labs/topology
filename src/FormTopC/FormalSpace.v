@@ -10,6 +10,7 @@ Require Import
   FormTopC.Cont.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 
 (** Bundle the definitions together *)
 (* Inductively generated formal topology *)
@@ -84,7 +85,7 @@ Proof.
 apply FormTop.monotone.
 Qed.
 
-Instance Cov_Proper :
+#[global] Instance Cov_Proper :
   Proper (le (PreSpace.S A) --> Included ==> Basics.arrow) (PreSpace.Cov A).
 Proof.
 apply FormTop.Cov_Proper.
@@ -93,13 +94,13 @@ Qed.
 (** This is just a flipped version of what's above. It
     shouldn't be needed. *)
 
-Instance Cov_Proper3  :
+#[global] Instance Cov_Proper3  :
   Proper (le (PreSpace.S A) ==> Included --> flip Basics.arrow) (PreSpace.Cov A).
 Proof.
 apply FormTop.Cov_Proper3.
 Qed.
 
-Instance Cov_Proper2 : Proper (eq ==> Same_set ==> iffT) (PreSpace.Cov A).
+#[global] Instance Cov_Proper2 : Proper (eq ==> Same_set ==> iffT) (PreSpace.Cov A).
 Proof.
 apply FormTop.Cov_Proper2.
 Qed.
@@ -187,7 +188,7 @@ Qed.
 
 Require Import CRelationClasses.
 
-Instance LE_map_PreOrder {A B} : PreOrder (@LE_map A B).
+#[global] Instance LE_map_PreOrder {A B} : PreOrder (@LE_map A B).
 Proof.
 constructor; unfold Reflexive, Transitive, LE_map;
   intros.

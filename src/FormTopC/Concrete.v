@@ -1,6 +1,7 @@
 Require Import Algebra.FrameC FormTopC.FormTop FormTopC.Cont Algebra.SetsC.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 Set Asymmetric Patterns.
 
 (** A definition of concrete topological spaces. These are formal topologies
@@ -18,7 +19,7 @@ Variable In : X -> Subset S.
 Definition le (s t : S) : Type := 
   forall x : X, In x s -> In x t.
 
-Instance SPO : @PO.t S le _ := PO.map (fun s x => In x s) (PO.subset X).
+#[global] Instance SPO : @PO.t S le _ := PO.map (fun s x => In x s) (PO.subset X).
 
 Record t : Type :=
   { here : forall x, { s : S & In x s }

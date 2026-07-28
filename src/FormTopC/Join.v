@@ -61,12 +61,12 @@ Definition ops' : JoinLat.Ops (list S) :=
   ;  JoinLat.max := joinL
   |}.
 
-Instance ops : JoinLat.Ops (list S) := ops'.
+#[global] Instance ops : JoinLat.Ops (list S) := ops'.
 
 
 Require Import CMorphisms.
 
-Instance joinPreO : @PreO.t (list S) leL.
+#[global] Instance joinPreO : @PreO.t (list S) leL.
 Proof.
 constructor; intros.
 - simpl. unfold leL. intros. exists x0.
@@ -78,7 +78,7 @@ constructor; intros.
   assumption.
 Qed.
 
-Instance joinPO : @PO.t (list S) leL JoinLat.eq.
+#[global] Instance joinPO : @PO.t (list S) leL JoinLat.eq.
 Proof.
 constructor.
 - apply joinPreO.
@@ -121,7 +121,7 @@ Variable Cov : S -> (Subset S) -> Prop.
 Definition LCov (a : list S) (U : Subset (list S)) :=
   forall s : S, member s a -> Cov s (fun s' => { xs : list S & (member s' xs * U xs)%type }).
 
-Instance joinify : FormTop.t le Cov -> t nil LCov.
+#[global] Instance joinify : FormTop.t le Cov -> t nil LCov.
 Proof.
 intros FTS.
 constructor.

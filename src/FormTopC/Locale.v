@@ -8,11 +8,12 @@ Require Import
   FormTopC.FormalSpace.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 
 Local Open Scope Subset.
 Local Open Scope FT.
 
-Existing Instances FormalSpace.Cov_Proper 
+#[global] Existing Instances FormalSpace.Cov_Proper 
   FormalSpace.Cov_Proper2 
   FormalSpace.Cov_Proper3
   FormalSpace.FT
@@ -47,7 +48,7 @@ Definition LOps : Lattice.Ops T :=
   ;  Lattice.min := minA
   |}.
 
-Instance LOps' : Lattice.Ops T := LOps.
+#[global] Instance LOps' : Lattice.Ops T := LOps.
 
 Definition FOps : @Frame.Ops T := 
   {| Frame.LOps := LOps
@@ -55,7 +56,7 @@ Definition FOps : @Frame.Ops T :=
    ; Frame.sup := supA
   |}.
 
-Instance FOps' : @Frame.Ops T := FOps.
+#[global] Instance FOps' : @Frame.Ops T := FOps.
 
 Axiom undefined : forall A, A.
 
@@ -122,7 +123,7 @@ intros. split.
   rewrite l. apply refl. assumption.
 Qed.
 
-Existing Instances Union_Proper_le_flip Union_Proper_eq.
+#[global] Existing Instances Union_Proper_le_flip Union_Proper_eq.
 
 Theorem FrameLatt : Lattice.t T LOps.
 Proof.
@@ -269,7 +270,7 @@ apply Same_set_iff. intros. apply FormTop.subset_equiv.
 assumption.
 Qed.
 
-Existing Instances FormTop.Cov_Proper union_Proper.
+#[global] Existing Instances FormTop.Cov_Proper union_Proper.
 
 (** This shouldn't be necessary. It should essentially
     follow from union_Proper. *)
