@@ -4,7 +4,9 @@ Require Import
   CMorphisms.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 Local Open Scope Frame.
+
 
 Section Congruence.
 Context {A : Type} {OA : @Frame.Ops A} {FA : Frame.t OA}
@@ -69,7 +71,7 @@ econstructor.
     symmetry. apply f_L.
 Qed.
 
-Instance FrameC : Frame.t OpsA'.
+#[global] Instance FrameC : Frame.t OpsA'.
 Proof.
 econstructor.
 - apply LatticeC.
@@ -111,7 +113,7 @@ Class nucleus : Type :=
   ; j_mono : forall U, U <= j U
   ; j_idempotent : forall U, j (j U) <= j U }.
 
-Instance j_ProperI `{nucleus} : Proper (L.eq ==> L.eq) j.
+#[global] Instance j_ProperI `{nucleus} : Proper (L.eq ==> L.eq) j.
 Proof. apply j_Proper. Qed.
 
 Hypothesis j_nucleus : nucleus.
@@ -144,6 +146,20 @@ Qed.
 Lemma j_idem_eq (U : A) : j (j U) == j U.
 Proof.
 apply PO.le_antisym. apply j_idempotent. apply j_mono.
+Qed.
+
+(** [rewrite] with an [L.eq] hypothesis under [<=] loops in the presence of
+    the many partial-order instances in scope, so we turn the equality into
+    an inequality explicitly. *)
+Lemma eq_le_j (x y : A) : x == y -> x <= y.
+Proof.
+intros H. apply (fst (PO.le_proper x x x y (PO.eq_refl x) H)).
+apply PreO.le_refl.
+Qed.
+
+Lemma le_eq_r (x y z : A) : x <= y -> y == z -> x <= z.
+Proof.
+intros H He. apply (fst (PO.le_proper x x y z (PO.eq_refl x) He)). assumption.
 Qed.
 
 Lemma j_join_le (x y x' y' : A) : j x <= j y
@@ -180,29 +196,39 @@ econstructor.
   + simpl. intros. apply PO.le_antisym; assumption.
 - unfold Proper, respectful. simpl. intros. 
   apply PO.le_antisym; apply j_join_le.
-  rewrite X; reflexivity. rewrite X0. reflexivity.
-  rewrite <- X. reflexivity. rewrite <- X0. reflexivity.
+  apply eq_le_j; assumption.
+  apply eq_le_j; assumption.
+  apply eq_le_j; apply PO.eq_sym; assumption.
+  apply eq_le_j; apply PO.eq_sym; assumption.
 - simpl. intros. econstructor.
   + apply j_mono2. rewrite <- j_mono. apply L.max_ok.
   + apply j_mono2. rewrite <- j_mono. apply L.max_ok.
   + intros. rewrite j_join_le; try eassumption.
-    rewrite max_idempotent. apply j_idempotent.
+    apply (PreO.le_trans _ (j (j m'))).
+    apply j_mono2. apply eq_le_j. apply j_ProperI. apply max_idempotent.
+    apply j_idempotent.
 - unfold Proper, respectful. simpl. intros.
   apply j_Proper. rewrite !j_meet. apply L.min_proper; assumption.
 - simpl. intros. econstructor.
   + rewrite j_idempotent. apply j_mono2. apply L.min_ok.
   + rewrite j_idempotent. apply j_mono2. apply L.min_ok.
-  + intros. rewrite !j_meet, !j_idem_eq. apply L.min_ok; assumption.
+  + intros. apply (le_eq_r _ (j l ∧ j r)).
+    apply L.min_ok; assumption.
+    apply PO.eq_sym.
+    apply (PO.eq_trans _ (j (j l ∧ j r))). apply j_ProperI. apply j_meet.
+    apply (PO.eq_trans _ (j (j l) ∧ j (j r))). apply j_meet.
+    apply L.min_proper; apply j_idem_eq.
 Qed.
 
-Instance FrameJ : Frame.t OpsAj.
+#[global] Instance FrameJ : Frame.t OpsAj.
 Proof.
 econstructor.
 - apply LatticeJ.
 - unfold PreO.top. intros. simpl. apply j_mono2. apply Frame.top_ok.
 - unfold Proper, pointwise_relation, respectful. simpl.
-  intros. apply PO.le_antisym; apply j_sup_le; intros; 
-    rewrite X; reflexivity.
+  intros. apply PO.le_antisym; apply j_sup_le; intros i;
+    first [ apply eq_le_j; apply X
+          | apply eq_le_j; apply PO.eq_sym; apply X ].
 - simpl. intros. econstructor.
   + intros. apply j_mono2. rewrite j_mono. apply j_mono2.
     apply Frame.sup_ok.
@@ -271,7 +297,7 @@ unfold is_implies. intros. apply PO.le_antisym.
 - apply (X UV'). apply X0. reflexivity.
 Qed.
 
-Instance min_mono : Proper (L.le ==> L.le ==> L.le) L.min.
+#[global] Instance min_mono : Proper (L.le ==> L.le ==> L.le) L.min.
 Proof.
 unfold Proper, respectful.
 intros. apply L.min_ok. rewrite <- X. apply L.min_ok.
@@ -319,7 +345,7 @@ intros. apply PO.le_antisym; eapply impl_apply_le;
 rewrite <- X1. reflexivity.
 Qed.
 
-Instance is_implies_Proper : Proper (L.eq ==> L.eq ==> L.eq ==> arrow) is_implies.
+#[global] Instance is_implies_Proper : Proper (L.eq ==> L.eq ==> L.eq ==> arrow) is_implies.
 Proof.
 unfold Proper, respectful, arrow, is_implies.
 intros. rewrite <- X1, <- X0, <- X. apply X2.
@@ -329,7 +355,7 @@ Variable V : A.
 Variable Vimpl : A -> A.
 Hypothesis Vimpl_ok : forall U, is_implies V U (Vimpl U).
 
-Instance Vimpl_Proper : Proper (L.eq ==> L.eq) Vimpl.
+#[global] Instance Vimpl_Proper : Proper (L.eq ==> L.eq) Vimpl.
 Proof.
 unfold Proper, respectful. intros.
 eapply is_implies_unique. apply Vimpl_ok.
@@ -352,7 +378,7 @@ Qed.
 Definition OpenSubOpsN : @Frame.Ops A :=
   OpsAj Vimpl.
 
-Instance OpenSubFrameN : Frame.t OpenSubOpsN.
+#[global] Instance OpenSubFrameN : Frame.t OpenSubOpsN.
 Proof.
   apply FrameJ. apply Vimpl_nucleus.
 Qed.
@@ -415,7 +441,7 @@ Qed.
 
 Definition OpenSubOps : @Frame.Ops A := OpsA' intV.
 
-Instance OpenSubFrame : Frame.t OpenSubOps.
+#[global] Instance OpenSubFrame : Frame.t OpenSubOps.
 Proof.
   apply FrameC. apply intV_L. apply intV_sup.
 Qed.
@@ -448,7 +474,7 @@ Definition union_f (b : B) : A := Frame.sup (fun i => f' i b).
 Hypothesis covering : Frame.top <= union_f Frame.top.
 
 (** This is copied. I should put it somewhere good. *)
-Instance min_mono2 {Z} `{Frame.t Z} : Proper (L.le ==> L.le ==> L.le) L.min.
+#[global] Instance min_mono2 {Z} `{Frame.t Z} : Proper (L.le ==> L.le ==> L.le) L.min.
 Proof.
 unfold Proper, respectful.
 intros. apply L.min_ok. rewrite <- X. apply L.min_ok.
@@ -456,7 +482,7 @@ rewrite <- X0. apply L.min_ok.
 Qed.
 
 
-Instance max_mono {Z} `{Frame.t Z} : Proper (L.le ==> L.le ==> L.le) L.max.
+#[global] Instance max_mono {Z} `{Frame.t Z} : Proper (L.le ==> L.le ==> L.le) L.max.
 Proof.
 unfold Proper, respectful.
 intros. apply L.max_ok. rewrite X. apply L.max_ok.
@@ -526,7 +552,7 @@ apply PO.le_antisym.
   apply L.max_ok.
 Qed.
 
-Existing Instances Frame.f_eq L.min_proper.
+#[global] Existing Instances Frame.f_eq L.min_proper.
 
 Theorem pattern : Frame.morph OB OA union_f.
 Proof.
