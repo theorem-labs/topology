@@ -47,6 +47,17 @@ Definition func_EQ@{} (F_ G_ : map S T) : Type@{PS'} :=
 
 Context {POS : PreO.t@{AS PS} (le (PreSpace.S S))}
         {POT : PreO.t@{AT PT} (le (PreSpace.S T))}.
+Local Instance S_le_Reflexive : Reflexive (le (PreSpace.S S)) :=
+  fun x => @PreO.le_refl _ _ POS x.
+Local Instance S_flip_le_Reflexive :
+  Reflexive (flip (le (PreSpace.S S))) :=
+  fun x => @PreO.le_refl _ _ POS x.
+Local Instance S_le_Transitive : Transitive (le (PreSpace.S S)) :=
+  fun x y z => @PreO.le_trans _ _ POS x y z.
+Local Instance T_le_Reflexive : Reflexive (le (PreSpace.S T)) :=
+  fun x => @PreO.le_refl _ _ POT x.
+Local Instance T_le_Transitive : Transitive (le (PreSpace.S T)) :=
+  fun x y z => @PreO.le_trans _ _ POT x y z.
 
 Global Instance func_LE_PreOrder : CRelationClasses.PreOrder func_LE.
 Proof.
@@ -212,6 +223,10 @@ Section Morph.
 Context {S : PreSpace.t}.
 Context {POS : PreO.t (le (PreSpace.S S))}
         {FTS : FormTop.t S}.
+Local Instance morph_S_le_Reflexive : Reflexive (le (PreSpace.S S)) :=
+  fun x => @PreO.le_refl _ _ POS x.
+Local Instance morph_S_le_Transitive : Transitive (le (PreSpace.S S)) :=
+  fun x y z => @PreO.le_trans _ _ POS x y z.
 
 Definition id (x y : S) := (y <= x)%FT.
 
@@ -334,7 +349,7 @@ Context {POS : PreO.t (le S)}
         {POT : PreO.t (le T)}.
 
 Record t {F_ : Cont.map S (toPSL T)} :=
-  { here : forall a, a <|[S] union (fun _ : T => True) F_
+  { here : forall a, a <|[S] union (fun _ : toPSL T => True) F_
   ; local : forall a b c, F_ b a -> F_ c a ->
        a <|[S] union (eq b ↓ eq c) F_
   ; le_left : forall a b c, a <=[S] c -> F_ b c -> F_ b a
@@ -353,7 +368,9 @@ Context {FTS : FormTop.t S}.
 Theorem cont : forall F, t F -> Cont.t S (toPSL T) F.
 Proof.
 intros. constructor; intros.
-- apply (here X).
+- pose proof (here X a) as Ha.
+  refine (FormTop.monotone _ _ _ a Ha).
+  intros x H. destruct H as [t Ht HF]. econstructor; eassumption.
 - eapply le_left; eassumption.
 - apply local; assumption.
 - generalize dependent a. induction X1; intros.
@@ -379,7 +396,11 @@ Theorem converse : forall F, Cont.t S (toPSL T) F
 Proof.
 intros. 
 constructor; intros.
-- apply (Cont.Cov_Sat (T := toPSL T)). apply (Cont.here X).
+- pose proof
+    (Cont.Cov_Sat (T := toPSL T) a
+       (fun _ : toPSL T => True) F (Cont.here X a)) as Ha.
+  refine (FormTop.monotone _ _ _ a Ha).
+  intros x H. destruct H as [t Ht HF]. econstructor; eassumption.
 - unfold Cont.Sat in *. 
   apply Cont.Cov_Sat. FormTop.ejoin. FormTop.etrans.
   destruct X2. destruct d, d0.
@@ -395,7 +416,7 @@ constructor; intros.
   pose proof (Cont.cov X (a := a) (b := b) (eq c)).
   eapply FormTop.monotone. Focus 2. apply X3.
   assumption. assumption.
-  apply union_eq.
+  intros x H. destruct H as [t Ht HF]. destruct Ht. exact HF.
 - unfold Cont.Sat in X1. FormTop.etrans.
   apply (Cont.Cov_Sat (T := toPSL T)). Cont.ecov.
   apply FormTop.gle_infinity with _ j. assumption.

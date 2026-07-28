@@ -47,6 +47,12 @@ Coercion fromIGt : IGt >-> t.
 
 Local Instance FT (A : t) : FormTop.t A := isFT A.
 Local Instance PreO (X : t) : PreO.t (le (PreSpace.S X)) := PO X.
+Local Instance t_le_Reflexive (X : t) :
+  Reflexive (le (PreSpace.S X)) :=
+  fun x => @PreO.le_refl _ _ (PO X) x.
+Local Instance t_le_Transitive (X : t) :
+  Transitive (le (PreSpace.S X)) :=
+  fun x y z => @PreO.le_trans _ _ (PO X) x y z.
 
 Section Properness.
 Require Import CMorphisms.

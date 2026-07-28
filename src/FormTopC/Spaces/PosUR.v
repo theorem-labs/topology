@@ -1,4 +1,5 @@
 Require Import
+  CoRN.model.structures.Qpossec
   CoRN.model.structures.QposInf
 
   Prob.StdLib
@@ -75,14 +76,15 @@ destruct a.
 - contradiction.
 Qed.
 
-Definition fromQpos (x : Qpos) (y : QposInf) := x < y.
+Definition fromQpos (x : Qpos) (y : QposInf) :=
+  Qpos2QposInf x < y.
 
 Definition Pt := IGCont.pt PosUR.
 
 Local Open Scope Subset.
 
 Lemma Qpos_lt_equiv (x y : Qpos) :
-  (x < y) <--> (x < y)%Q.
+  (Qpos2QposInf x < Qpos2QposInf y) <--> (x < y)%Q.
 Proof.
 split; intros.
 - destruct X. simpl in *. apply Qnot_le_lt.
@@ -93,20 +95,23 @@ split; intros.
   apply H0. assumption.
 Qed.
 
-Definition Qpos_smaller' (x : Qpos) : { y : Qpos & y < x }.
+Definition Qpos_smaller' (x : Qpos) :
+  { y : Qpos & Qpos2QposInf y < Qpos2QposInf x }.
 Proof.
 destruct (Qpos_smaller x) as [x' prf].
 exists x'. apply Qpos_lt_equiv. apply prf.
 Qed.
 
-Definition QposInf_smaller (x : QposInf) : { y : Qpos & y < x }.
+Definition QposInf_smaller (x : QposInf) :
+  { y : Qpos & Qpos2QposInf y < x }.
 Proof.
 destruct x.
 - apply Qpos_smaller'.
 - exists Qpos_one. unfold lt. simpl. auto.
 Qed.
 
-Lemma Qpos_plus_lt (x y : Qpos) : x < x + y.
+Lemma Qpos_plus_lt (x y : Qpos) :
+  Qpos2QposInf x < Qpos2QposInf (x + y).
 Proof.
 unfold lt. split.
 - unfold le. simpl.
@@ -129,7 +134,7 @@ Definition Qpos_pt (x : Qpos) : Pt (fromQpos x).
 Proof.
 apply IGLCont.localized_pt_impl.
 constructor; intros.
-- simpl. exists (x + 1)%Qpos. unfold In, fromQpos.
+- simpl. exists (Qpos2QposInf (x + 1)%Qpos). unfold In, fromQpos.
   apply Qpos_plus_lt.
 - exists (QposInf_min b c). constructor.
   split; le_down. apply QposInf_min_lb_l. apply QposInf_min_lb_r.
@@ -142,7 +147,8 @@ constructor; intros.
 - unfold fromQpos in *. eapply lt_le_trans; eassumption.
 - destruct i.
   unfold fromQpos in *. unfold C.
-  destruct (QposInf_between x x0 X).
+  destruct
+    (QposInf_between (Qpos2QposInf x) (Qpos2QposInf x0) X).
   destruct p. exists x1. split; assumption.
 Qed.
 
@@ -153,14 +159,14 @@ Definition URzero_pt : Pt URzero.
 Proof.
 apply IGLCont.localized_pt_impl.
 constructor; intros.
-- simpl. exists 1%Qpos. constructor.
+- simpl. exists (Qpos2QposInf 1%Qpos). constructor.
 - exists (QposInf_min b c). constructor.
   split; le_down. apply QposInf_min_lb_l. apply QposInf_min_lb_r.
   constructor.
 - constructor.
 - destruct i. 
   destruct (QposInf_smaller x).
-  simpl. exists x0. split. constructor. assumption.
+  simpl. exists (Qpos2QposInf x0). split. constructor. assumption.
 Qed.
 
 Inductive URinfty : QposInf -> Type :=
