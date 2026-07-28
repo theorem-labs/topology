@@ -62,6 +62,12 @@ Section Sum.
 Context {Ix : Type}.
 Context {Ix_UIP : EqdepFacts.UIP_ Ix}.
 Context {A : Ix -> IGt}.
+Local Instance sum_component_le_Reflexive ix :
+  CRelationClasses.Reflexive (le (A ix)) :=
+  fun x => @PreO.le_refl _ _ (IGPO (A ix)) x.
+Local Instance sum_component_le_Transitive ix :
+  CRelationClasses.Transitive (le (A ix)) :=
+  fun x y z => @PreO.le_trans _ _ (IGPO (A ix)) x y z.
 
 Definition S' := SomeOpen A.
 
@@ -79,7 +85,7 @@ Inductive InDisjunct {ix : Ix} {U : Open (A ix)} : Subset S' :=
 Arguments InDisjunct {ix} U.
 
 Definition C' (p : S') (ix : Ix' p) : Subset S' := match ix with
-  | MkIx ix s ax => InDisjunct (PreISpace.C (A ix) s ax)
+  | @MkIx ix s ax => InDisjunct (PreISpace.C (A ix) s ax)
   end.
 
 Definition le' : S' -> S' -> Type := SomeOpen_le (X := A).
