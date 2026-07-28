@@ -19,6 +19,12 @@ Section Truncate.
 
 Variable A : IGt.
 Context {A_Pos : FormTop.gtPos A}.
+Local Instance truncate_A_le_Reflexive :
+  CRelationClasses.Reflexive (PreOrder.le A) :=
+  fun x => @PreO.le_refl _ _ (IGPO A) x.
+Local Instance truncate_A_le_Transitive :
+  CRelationClasses.Transitive (PreOrder.le A) :=
+  fun x y z => @PreO.le_trans _ _ (IGPO A) x y z.
 
 Inductive le {s t : A} : Type :=
   | Orig : s <=[A] t -> le

@@ -1,5 +1,6 @@
 Require Import 
   Coq.Arith.Compare_dec
+  Coq.Arith.PeanoNat
 
   Prob.StdLib
   Algebra.SetsC
@@ -31,6 +32,10 @@ constructor; intros.
   eapply PeanoNat.Nat.le_lt_trans; eassumption.
   subst. assumption.
 Qed.
+Local Instance O_le_Reflexive : CRelationClasses.Reflexive le :=
+  fun x => @PreO.le_refl _ _ le_PreO x.
+Local Instance O_le_Transitive : CRelationClasses.Transitive le :=
+  fun x y z => @PreO.le_trans _ _ le_PreO x y z.
 
 Inductive Next {n : nat} : O -> Set :=
   | Next_Later : Next (MoreThan (S n))
@@ -73,7 +78,7 @@ constructor; intros.
 - exists (MoreThan 0). constructor.
 - destruct H, H0. exists (MoreThan (max n n0)). 
   econstructor. split; le_down; constructor.
-  apply Max.le_max_l. apply Max.le_max_r.
+  apply Nat.le_max_l. apply Nat.le_max_r.
   constructor.
 - destruct H. inv H0. constructor.
 - destruct j as [m]. simpl.
@@ -85,7 +90,7 @@ constructor; intros.
     exists (MoreThan (S m)).  constructor.
     constructor. assumption.
   + subst. exists (MoreThan (S n)). split.  constructor.
-    split. le_down. simpl. constructor. apply Le.le_n_Sn.
+    split. le_down. simpl. constructor. apply Nat.le_succ_diag_r.
     exists (MoreThan (S n)). constructor.
     simpl. constructor. reflexivity.
 Qed.
@@ -108,8 +113,11 @@ constructor; unfold exactly; intros.
     * subst. split. le_down. simpl. constructor.
       assumption. exists (Exactly (S m)). constructor.
       reflexivity.
-    * exfalso. eapply Lt.le_not_lt. 2: eassumption.
-      etransitivity. 2: eapply H2. apply Le.le_n_S. assumption. 
+    * exfalso. apply (proj1 (Nat.le_ngt n n0)).
+      transitivity m.
+      apply (proj1 (Nat.lt_succ_r _ _)). exact GT.
+      exact H3.
+      exact H2.
   + inv H. exists (Exactly n0).
     split. constructor. reflexivity.
     split. le_down. reflexivity.
