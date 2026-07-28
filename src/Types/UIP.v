@@ -3,6 +3,7 @@ Require Import
   Eqdep_dec.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 
 Lemma UIP_eq_dep_eq {A} :
   EqdepFacts.UIP_ A -> EqdepFacts.Eq_dep_eq A.

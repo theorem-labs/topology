@@ -1,4 +1,5 @@
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 
 (** Some useful tactics. *)
 
@@ -41,18 +42,18 @@ Typeclasses Opaque iffT.
 
 Require Import CRelationClasses.
 
-Instance iffT_Reflexive : Reflexive iffT.
+#[global] Instance iffT_Reflexive : Reflexive iffT.
 Proof. firstorder. Qed.
 
-Instance iffT_Symmetric : Symmetric iffT.
+#[global] Instance iffT_Symmetric : Symmetric iffT.
 Proof. firstorder. Qed.
 
-Instance iffT_Transitive : Transitive iffT.
+#[global] Instance iffT_Transitive : Transitive iffT.
 Proof. firstorder. Qed.
 
-Instance iffT_arrow_subrelation : subrelation iffT arrow | 2.
+#[global] Instance iffT_arrow_subrelation : subrelation iffT arrow | 2.
 Proof. firstorder. Qed.
 
-Instance iffT_flip_arrow_subrelation : subrelation iffT (flip arrow) | 2.
+#[global] Instance iffT_flip_arrow_subrelation : subrelation iffT (flip arrow) | 2.
 Proof. firstorder. Qed.
 *)

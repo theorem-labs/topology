@@ -1,5 +1,7 @@
 Require Types.Iso.
 Require Fin.
+Require Vector.
+Require Import Program.
 
 Set Asymmetric Patterns.
 
@@ -22,8 +24,8 @@ induction n.
 refine (
 {| Iso.to := fun x => (match x in Fin.t n'
   return (S n = n') -> Fin (S n) with
-   | Fin.F1 _ => fun _ => inl I
-   | Fin.FS n' x' => fun pf => inr (Iso.to IHn (eq_rect n' Fin.t x' _ (eq_sym (eq_add_S _ _ pf))))
+   | @Fin.F1 _ => fun _ => inl I
+   | @Fin.FS n' x' => fun pf => inr (Iso.to IHn (eq_rect n' Fin.t x' _ (eq_sym (eq_add_S _ _ pf))))
    end) eq_refl
  ; Iso.from := fun x => match x with
    | inl I => Fin.F1
@@ -31,14 +33,13 @@ refine (
    end
 |}).
 intros a.
-Require Import Program.
 dependent destruction a; simpl.
 reflexivity. rewrite Iso.from_to. reflexivity.
 intros b. destruct b. destruct t. reflexivity.
   simpl. rewrite Iso.to_from. reflexivity.
-Grab Existential Variables.
-intros bot. contradiction.
+Unshelve.
 intros f0. inversion f0.
+intros bot. contradiction.
 Defined.
 
 Lemma botNull (A : Type) : Iso.T A (A + False).
@@ -61,8 +62,8 @@ refine (
   | 0 => fun _ => inr
   | S m' => fun n x => (match x as x0 in Fin.t k 
     return forall (pf : k = (S m' + n)), (Fin.t (S m') + Fin.t n) with
-    | Fin.F1 _ => fun pf => inl Fin.F1
-    | Fin.FS n' x' => fun pf => _
+    | @Fin.F1 _ => fun pf => inl Fin.F1
+    | @Fin.FS n' x' => fun pf => _
     end) eq_refl
   end).
 simpl in pf.
@@ -268,8 +269,8 @@ Inductive T : Type -> Type :=
 
 Fixpoint card {A} (fin : T A) := match fin with
   | F0 => 0
-  | FS _ n => S (card n)
-  | FIso _ _ x iso => card x
+  | @FS _ n => S (card n)
+  | @FIso _ _ x iso => card x
   end.
 
 Definition fin (n : nat) : T (Fin.t n).
@@ -401,8 +402,8 @@ Qed.
 Fixpoint elementsV {A} (fin : T A) : Vector.t A (card fin) := 
   match fin in T A' return Vector.t A' (card fin) with
   | F0 => Vector.nil False
-  | FS _ n => Vector.cons _ (inl I) _ (Vector.map inr (elementsV n))
-  | FIso _ _ x iso => let xs := elementsV x in
+  | @FS _ n => Vector.cons _ (inl I) _ (Vector.map inr (elementsV n))
+  | @FIso _ _ x iso => let xs := elementsV x in
      Vector.map (Iso.to iso) xs
   end.
 
@@ -413,8 +414,8 @@ Import ListNotations.
 Fixpoint elements {A} (fin : T A) : list A 
   := match fin in T A'  with
   | F0 => []
-  | FS _ n => inl I :: List.map inr (elements n)
-  | FIso _ _ x iso => let xs := elements x in
+  | @FS _ n => inl I :: List.map inr (elements n)
+  | @FIso _ _ x iso => let xs := elements x in
      List.map (Iso.to iso) xs
   end.
 
@@ -493,7 +494,7 @@ Proof.
 generalize dependent P. induction fin; intros P decP.
 - eapply FIso. apply F0.
   eapply Iso.Trans. apply Iso.iso_true_subset. 
-  apply Iso.subsetSelf; firstorder.
+  apply Iso.subsetSelf; firstorder; contradiction.
 - eapply FIso. 2: eapply Iso.Sym; apply Iso.subset_sum_distr.
   destruct (decP (inl I)).
   + eapply FIso. Focus 2.

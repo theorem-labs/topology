@@ -4,6 +4,7 @@ Require Import
 Import ListNotations.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 
 Inductive member {A} : A -> list A -> Type :=
 | here : forall {x xs}, member x (x :: xs)
@@ -133,12 +134,12 @@ Definition FSubset {A} (xs ys : list A) : Type :=
 Definition FSameset {A} (xs ys : list A) : Type :=
   forall a : A, iffT (member a xs) (member a ys).
 
-Instance FSubset_PreOrder {A} : PreOrder (@FSubset A).
+#[global] Instance FSubset_PreOrder {A} : PreOrder (@FSubset A).
 Proof.
 firstorder.
 Qed.
 
-Instance FSameset_Equivalence {A} : Equivalence (@FSameset A).
+#[global] Instance FSameset_Equivalence {A} : Equivalence (@FSameset A).
 Proof.
 firstorder.
 Qed.

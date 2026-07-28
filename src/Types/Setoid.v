@@ -1,4 +1,5 @@
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 Set Asymmetric Patterns.
 
 Require Import 
@@ -19,7 +20,7 @@ Local Open Scope setoid.
 Delimit Scope SetoidC_scope with setoidc.
 Local Open Scope setoidc.
 
-Instance setoid_Equivalence (s : Setoid) : Equivalence (seq s).
+#[global] Instance setoid_Equivalence (s : Setoid) : Equivalence (seq s).
 Proof.
 apply seq_Equivalence.
 Qed.
@@ -52,7 +53,7 @@ Record function_car@{i P} (A B : Setoid@{i P}) :=
   ; sf_proper : forall a a', a == a' -> sf a == sf a'
   }.
 
-Instance function_Proper {A B} (f : function_car A B) : 
+#[global] Instance function_Proper {A B} (f : function_car A B) : 
   Proper (seq _ ==> seq _) f.
 Proof.
 unfold Proper, respectful. intros. 
@@ -155,11 +156,15 @@ Inductive eq {A} {x : A} : A -> Type :=
 Arguments eq {A} x y.
 *)
 
-Definition Leibniz (A : Type) : Setoid.
+Definition Leibniz@{u p} (A : Type@{u}) : Setoid@{u p}.
 Proof.
 unshelve eapply (
   {| sty := A
    ; seq := eq |}).
+constructor.
+- intros x. reflexivity.
+- intros x y H. symmetry. assumption.
+- intros x y z H1 H2. etransitivity; eassumption.
 Defined.
 
 Definition Leibniz_func {A B} (f : A -> B)

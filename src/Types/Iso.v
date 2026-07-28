@@ -62,7 +62,6 @@ Proof. refine (
 {| to := fun x => match x with existT I p => p end
  ; from := existT _ I
 |}).
-Proof. 
 intros x. destruct x. destruct x. reflexivity.
 intros b. reflexivity.
 Defined.
@@ -102,7 +101,6 @@ refine (
 {| to  := fun p => match p with (x, y) => existT (fun _ : A => B) x y end
 ; from := fun p => match p with existT x y => (x, y) end
 |} ).
-Proof.
 intros. destruct a. reflexivity.
 intros. destruct b. reflexivity.
 Defined. 

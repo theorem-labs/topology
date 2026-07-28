@@ -36,31 +36,31 @@ rewrite contra in H.
 eapply Qlt_irrefl. eassumption.
 Qed.
 
-Instance Qle_Reflexive : Reflexive Qle.
+#[global] Instance Qle_Reflexive : Reflexive Qle.
 Proof.
 unfold Reflexive. apply Qle_refl.
 Qed.
 
-Instance Qle_Transitive : Transitive Qle.
+#[global] Instance Qle_Transitive : Transitive Qle.
 Proof.
 unfold Transitive. apply Qle_trans.
 Qed.
 
-Instance Qlt_Transitive : Transitive Qlt.
+#[global] Instance Qlt_Transitive : Transitive Qlt.
 Proof.
 unfold Transitive. apply Qlt_trans.
 Qed.
 
 Require Import RelationClasses.
 
-Instance Qlt_le_Subrelation : subrelation Qlt Qle.
+#[global] Instance Qlt_le_Subrelation : subrelation Qlt Qle.
 Proof. 
 unfold subrelation, predicate_implication, pointwise_lifting
   , Basics.impl.
 apply Qlt_le_weak.
 Qed.
 
-Instance Qplus_le_Proper : Proper (Qle ==> Qle ==> Qle) Qplus.
+#[global] Instance Qplus_le_Proper : Proper (Qle ==> Qle ==> Qle) Qplus.
 Proof.
 unfold Proper, respectful.
 intros. apply Qplus_le_compat; assumption.
