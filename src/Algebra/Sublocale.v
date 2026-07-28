@@ -71,7 +71,14 @@ econstructor.
     symmetry. apply f_L.
 Qed.
 
-#[global] Instance FrameC : Frame.t OpsA'.
+(** NOT an [Instance]: this transports a frame along an ARBITRARY function [f],
+    so its premises are [Frame.t] goals at a carrier and structure that instance
+    search cannot determine.  Registered globally it is self-feeding — any
+    [Frame.t ?O] goal with [?O] an evar makes [typeclasses eauto] build
+    [OpsA' f1 (OpsA' f2 (...))] forever, which is how setoid rewriting in this
+    file used to run the machine out of memory.  It is used explicitly, by name,
+    in [OpenSubFrame] below. *)
+Lemma FrameC : Frame.t OpsA'.
 Proof.
 econstructor.
 - apply LatticeC.
@@ -88,6 +95,10 @@ econstructor.
     assumption.
 - simpl. intros. apply f_L. apply Frame.sup_distr.
 Qed.
+
+(** [Local]: it is discharged when the section closes, so it never becomes a
+    globally registered (self-feeding) instance. *)
+#[local] Existing Instance FrameC.
 
 Lemma incl_cont : Frame.morph OA OpsA' (fun a => a).
 Proof.
@@ -220,7 +231,9 @@ econstructor.
     apply L.min_proper; apply j_idem_eq.
 Qed.
 
-#[global] Instance FrameJ : Frame.t OpsAj.
+(** Not an [Instance] for the same reason as [FrameC] above: registered
+    globally it is self-feeding and makes instance search diverge. *)
+Lemma FrameJ : Frame.t OpsAj.
 Proof.
 econstructor.
 - apply LatticeJ.
@@ -256,6 +269,10 @@ econstructor.
       transitivity (j (f i)). transitivity (f i). apply L.min_ok.
       apply j_mono. apply j_mono2. apply Frame.sup_ok.
 Qed.
+
+(** [Local]: discharged when the section closes, so it never becomes a
+    globally registered (self-feeding) instance. *)
+#[local] Existing Instance FrameJ.
 
 Lemma incl_contN : Frame.morph OA OpsAj (fun a => a).
 Proof.
@@ -378,7 +395,9 @@ Qed.
 Definition OpenSubOpsN : @Frame.Ops A :=
   OpsAj Vimpl.
 
-#[global] Instance OpenSubFrameN : Frame.t OpenSubOpsN.
+(** Not an [Instance] for the same reason as [FrameC] above: registered
+    globally it is self-feeding and makes instance search diverge. *)
+Lemma OpenSubFrameN : Frame.t OpenSubOpsN.
 Proof.
   apply FrameJ. apply Vimpl_nucleus.
 Qed.
@@ -441,7 +460,9 @@ Qed.
 
 Definition OpenSubOps : @Frame.Ops A := OpsA' intV.
 
-#[global] Instance OpenSubFrame : Frame.t OpenSubOps.
+(** Not an [Instance] for the same reason as [FrameC] above: registered
+    globally it is self-feeding and makes instance search diverge. *)
+Lemma OpenSubFrame : Frame.t OpenSubOps.
 Proof.
   apply FrameC. apply intV_L. apply intV_sup.
 Qed.
