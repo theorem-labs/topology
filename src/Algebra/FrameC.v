@@ -73,6 +73,15 @@ Universes UI UA.
   Arguments t : clear implicits.
   Section Facts.
   Context {A : Type@{UA}} {OA} {tA : t A OA}.
+  Local Instance facts_lattice : L.t A LOps := @L _ OA tA.
+  Local Instance facts_po : PO.t L.le L.eq :=
+    @L.PO _ LOps facts_lattice.
+  Local Instance facts_preorder : PreO.t L.le :=
+    @PO.PreO _ L.le L.eq facts_po.
+  Local Instance facts_le_reflexive : Reflexive L.le :=
+    fun x => @PreO.le_refl _ _ facts_preorder x.
+  Local Instance facts_le_transitive : Transitive L.le :=
+    fun x y z => @PreO.le_trans _ _ facts_preorder x y z.
 
   Definition sup_proper_u : forall {Ix : Type@{UI}} (f g : Ix -> A),
     (forall (i : Ix), f i == g i) -> sup f == sup g.
@@ -149,6 +158,26 @@ Qed.
   Context {A B : Type@{UA}}
     {OA} {tA : t A OA}
     {OB} {tB : t B OB}.
+  Local Instance morph_A_lattice : L.t A LOps := @L _ OA tA.
+  Local Instance morph_A_po : PO.t (@L.le A LOps) (@L.eq A LOps) :=
+    @L.PO _ LOps morph_A_lattice.
+  Local Instance morph_A_eq_equiv : Equivalence (@L.eq A LOps).
+  Proof.
+    constructor.
+    - exact (@PO.eq_refl _ _ _ morph_A_po).
+    - exact (@PO.eq_sym _ _ _ morph_A_po).
+    - exact (@PO.eq_trans _ _ _ morph_A_po).
+  Defined.
+  Local Instance morph_B_lattice : L.t B LOps := @L _ OB tB.
+  Local Instance morph_B_po : PO.t (@L.le B LOps) (@L.eq B LOps) :=
+    @L.PO _ LOps morph_B_lattice.
+  Local Instance morph_B_eq_equiv : Equivalence (@L.eq B LOps).
+  Proof.
+    constructor.
+    - exact (@PO.eq_refl _ _ _ morph_B_po).
+    - exact (@PO.eq_sym _ _ _ morph_B_po).
+    - exact (@PO.eq_trans _ _ _ morph_B_po).
+  Defined.
 
   Record morph {f : A -> B} : Type :=
   { f_L : L.morph LOps LOps f
@@ -166,8 +195,10 @@ Qed.
 
   Lemma f_bottom {f : A -> B} : morph f -> L.eq (f bottom) bottom.
   Proof.
-  intros MF. unfold bottom. rewrite (f_sup MF). apply sup_proper.
-  unfold pointwise_relation. intros. contradiction.
+  intros MF. unfold bottom.
+  eapply (@PO.eq_trans _ _ _ (@L.PO _ _ (@L _ OB tB))).
+  - apply (f_sup MF).
+  - apply sup_proper. unfold pointwise_relation. intros. contradiction.
   Qed.
 
   Lemma f_cov {f : A -> B} (Hf : morph f)
@@ -176,8 +207,17 @@ Qed.
     -> f U <= sup (fun i : Ix => f (V i)).
   Proof.
   intros H.
-  rewrite <- f_sup by assumption.
-  eapply PO.f_PreO. apply Hf. assumption.
+  pose (BPO := @L.PO _ _ (@L _ OB tB)).
+  pose (BPreO := @PO.PreO _ _ _ BPO).
+  eapply (@PreO.le_trans _ _ BPreO).
+  - exact (PO.f_PreO (L.f_PO (f_L Hf)) U (sup V) H).
+  - pose proof
+      (@PO.le_proper _ _ _ BPO
+        (f (sup V)) (f (sup V))
+        (f (sup V)) (sup (fun i : Ix => f (V i)))
+        (@PO.eq_refl _ _ _ BPO (f (sup V))) (f_sup Hf V)) as Hproper.
+    destruct Hproper as [Hproper _].
+    apply Hproper. apply (@PreO.le_refl _ _ BPreO).
   Qed.
 
 
@@ -213,8 +253,10 @@ Qed.
 
   Lemma morph_id : morph OA OA (fun x => x).
   Proof. 
-   intros. constructor. apply L.morph_id. apply L.
-   reflexivity. reflexivity.
+   constructor. apply L.morph_id. apply L.
+   - intros Ix g.
+     exact (@PO.eq_refl _ _ _ (@L.PO _ _ (@L _ OA tA)) (sup g)).
+   - exact (@PO.eq_refl _ _ _ (@L.PO _ _ (@L _ OA tA)) top).
   Qed.
 
   Lemma morph_compose {B : Type@{UA}} {OB} {tB : t B OB}
@@ -225,27 +267,16 @@ Qed.
      -> morph OA OC (fun x => g (f x)).
   Proof. intros. constructor.
   - eapply L.morph_compose; (apply L || (eapply f_L; eassumption)).
-  - intros. rewrite <- (f_sup X0). rewrite (f_eq X0).
-    reflexivity. rewrite (f_sup X). reflexivity.
-  - rewrite <- (f_top X0). rewrite (f_eq X0).
-    reflexivity. rewrite (f_top X). reflexivity.
+  - intros Ix h.
+    eapply (@PO.eq_trans _ _ _ (@L.PO _ _ (@L _ OC tC))).
+    + apply (f_eq X0). apply (f_sup X h).
+    + apply (f_sup X0 (fun i : Ix => f (h i))).
+  - eapply (@PO.eq_trans _ _ _ (@L.PO _ _ (@L _ OC tC))).
+    + apply (f_eq X0). apply (f_top X).
+    + apply (f_top X0).
   Qed.
 
   End MorphProps.
-
-  Definition one_ops : Ops True :=
-    {| LOps := L.one_ops
-     ; top := I
-     ; sup := fun _ _ => I
-    |}.
-
-  Definition one : t True one_ops.
-  Proof. constructor; intros; auto.
-  - apply L.one.
-  - unfold PreO.top. simpl. auto.
-  - unfold Proper, respectful. intros. reflexivity.
-  - constructor; trivial.
-  Qed.
 
   (** Propositions form a frame, where supremum is given by the
       existential quantifier. *)
@@ -300,8 +331,11 @@ Qed.
   -> sup f <= sup g.
   Proof.
   intros H. eapply PreO.sup_least. apply sup_ok. intros.
-  destruct (H i). eapply PreO.le_trans. eassumption.
-  apply PreO.sup_ge. apply sup_ok.
+  destruct (H i) as [j Hij].
+  eapply (@PreO.le_trans _ _
+    (@PO.PreO _ _ _ (@L.PO _ _ (@L _ OA X)))).
+  - apply Hij.
+  - apply PreO.sup_ge. apply sup_ok.
   Qed.
 
   Definition morph_pointwise {A B C OC} {tC : t C OC} (f : B -> A)
@@ -310,8 +344,10 @@ Qed.
   Proof.
   constructor; intros; simpl in *; intros.
   - apply L.morph_pointwise.
-  - unfold pointwise_op. intros. apply PO.eq_refl.
-  - unfold pointwise_op. intros. reflexivity.
+  - unfold pointwise_op. intros.
+    exact (@PO.eq_refl _ _ _ (@L.PO _ _ (@L _ OC tC)) _).
+  - unfold pointwise_op. intros.
+    exact (@PO.eq_refl _ _ _ (@L.PO _ _ (@L _ OC tC)) _).
   Qed. 
 
   Definition subset_ops A : Ops (A -> Prop) := pointwise_ops (fun _ => prop_ops).
@@ -359,12 +395,27 @@ Qed.
   apply (f_cov (f := finv f)) in Hcov. 2: apply f.
   assert (L.le top (f U)).
   simpl. unfold arrow.  auto.
-  rewrite <- X in Hcov.
-  apply point_splits in Hcov.
-  destruct Hcov. exists x. apply l. simpl. auto.
+  assert (L.le top (sup (fun i => finv f (V i)))) as Hcov'.
+  { simpl in *. unfold arrow in *. auto. }
+  apply point_splits in Hcov'.
+  destruct Hcov'. exists x. apply l. simpl. auto.
   Qed.
 
 End Frame.
+
+  Definition one_ops : @Ops True :=
+    {| LOps := L.one_ops
+     ; top := I
+     ; sup := fun _ _ => I
+    |}.
+
+  Definition one : @t True one_ops.
+  Proof. constructor; intros; auto.
+  - apply L.one.
+  - unfold PreO.top. simpl. auto.
+  - unfold Proper, respectful. intros. reflexivity.
+  - constructor; trivial.
+  Qed.
 
 End Frame.
 
@@ -386,7 +437,7 @@ Generalizable All Variables.
 
 (** [dot] is a binary operation which is commutative, idempotent, and
     associative. It is effectively a max or min. *)
-Class t {A} {eq : A -> A -> Prop} {dot : A -> A -> A} :=
+Class t {A : Set} {eq : A -> A -> Prop} {dot : A -> A -> A} :=
   { eq_equiv :: Equivalence eq
   ; dot_proper :: Proper (eq ==> eq ==> eq) dot
   ; dot_idempotent : forall a, eq (dot a a) a
@@ -435,8 +486,9 @@ Instance asMeetLat : MeetLat.t A ops.
 Proof.
 constructor. 
 - apply asPO.
-- unfold CMorphisms.Proper, CMorphisms.respectful; intros. 
-  simpl in *. rewrite X, X0. reflexivity.
+- unfold CMorphisms.Proper, CMorphisms.respectful.
+  intros x x' Hx y y' Hy.
+  simpl in *. rewrite Hx, Hy. reflexivity.
 - intros. constructor; simpl; intros.
   + rewrite dot_comm. rewrite dot_assoc.
     rewrite dot_idempotent. reflexivity.

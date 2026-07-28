@@ -44,7 +44,7 @@ Lemma downset_included {PO : PreO.t (le A)} : forall (V : Open A),
    V ⊆ ⇓ V.
 Proof.
 intros. unfold Included, pointwise_rel, arrow; intros.
-econstructor. eassumption. reflexivity.
+econstructor. eassumption. apply (@PreO.le_refl _ _ PO).
 Qed.
 
 Lemma downset_Proper_impl : Proper (Included ==> Included)
@@ -64,13 +64,17 @@ apply Included_Same_set; apply downset_Proper_impl; try assumption;
 Qed.
 
 Context {PO : PreO.t (le A)}.
+Local Instance le_Reflexive : Reflexive (le A) :=
+  fun x => @PreO.le_refl _ _ PO x.
+Local Instance le_Transitive : Transitive (le A) :=
+  fun x y z => @PreO.le_trans _ _ PO x y z.
 
 Lemma down_intersection {U V : Subset A} :
   U ∩ V ⊆ U ↓ V.
 Proof.
 apply Included_impl. intros. destruct X.
 unfold down. split; exists x;
-  (assumption || reflexivity).
+  (assumption || apply (@PreO.le_refl _ _ PO)).
 Qed.
 
 Lemma downset_down_incl {U V : Subset A} :
@@ -181,7 +185,7 @@ Lemma downset_eq_le {A : PreOrder}
 Proof.
 intros Hle x H.
 le_downH H.
-le_down. etransitivity; eassumption.
+le_down. eapply (@PreO.le_trans _ _ PO); eassumption.
 Qed.
 
 Definition BProdPO (A B : PreOrder) : PreOrder :=
@@ -220,9 +224,9 @@ Context {PO : forall ix : Ix, PreO.t (le (X ix))}.
 Instance Sum_PO : PreO.t SomeOpen_le.
 Proof.
 constructor; simpl; intros.
-- destruct x. econstructor. reflexivity.
+- destruct x. econstructor. apply (@PreO.le_refl _ _ (PO SOIx0)).
 - induction X0. UIP_inv X1.
-  econstructor. etransitivity; eassumption.
+  econstructor. eapply (@PreO.le_trans _ _ (PO ix)); eassumption.
 Qed.
 
 End Sum.
