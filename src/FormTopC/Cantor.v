@@ -48,6 +48,12 @@ constructor; intros.
   destruct e. subst. rewrite app_nil_r.
   reflexivity.
 Defined.
+Local Instance Cantor_PreO : PreO.t (le CantorPO) :=
+  @PO.PreO _ LE eq LE_PO.
+Local Instance Cantor_le_Reflexive : Reflexive (le CantorPO) :=
+  fun x => @PreO.le_refl _ _ Cantor_PreO x.
+Local Instance Cantor_le_Transitive : Transitive (le CantorPO) :=
+  fun x y z => @PreO.le_trans _ _ Cantor_PreO x y z.
 
 Definition PreCantor : PreISpace.t :=
   {| PreISpace.S := CantorPO
