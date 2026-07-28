@@ -12,6 +12,7 @@ Require Import
   CoRN.model.ordfields.Qordfield
   CoRN.model.metric2.Qmetric
   CoRN.metric2.ProductMetric
+  Coq.micromega.Lra
   Algebra.SetsC.
 
 Definition unit_RSetoid : RSetoid.
@@ -26,21 +27,50 @@ Definition MOne : MetricSpace.
 Proof.
 unshelve econstructor.
 - exact (unit_RSetoid).
-- exact (fun _ _ _ => True).
-- simpl. intros. split; intros; auto.
+	- exact (fun e _ _ => (0 <= e)%Q).
+- simpl. intros. split; intros.
+  + exact
+      (proj1 (Qle_comp 0 0 (Qeq_refl 0) _ _ H) H0).
+  + exact
+      (proj2 (Qle_comp 0 0 (Qeq_refl 0) _ _ H) H0).
 - simpl. constructor.
-  + unfold Reflexive. auto.
-  + unfold Symmetric. auto.
-  + auto.
-  + auto.
-  + simpl. auto.
+  + intros e He x. exact He.
+  + intros e x y He. exact He.
+  + intros e1 e2 x y z He1 He2.
+    exact (Qplus_le_compat 0 e1 0 e2 He1 He2).
+  + intros e x y He.
+    apply Qnot_lt_le. intros Hneg.
+    assert (Hopp : (0 < - e)%Q).
+    { change (- 0 < - e)%Q. apply Qopp_lt_compat. exact Hneg. }
+    assert (Hhalf : (0 < (1#2))%Q) by reflexivity.
+    assert (Hpos : (0 < (- e) * (1#2))%Q).
+    { apply Qmult_lt_0_compat; assumption. }
+    specialize (He ((- e) * (1#2))%Q Hpos).
+    assert (Hprod : (e * (1#2) < 0 * (1#2))%Q).
+    { apply Qmult_lt_compat_r; assumption. }
+    assert (Hsum : (e + (- e) * (1#2) == e * (1#2))%Q) by ring.
+    assert (Hzero : (0 == 0 * (1#2))%Q) by ring.
+    pose proof
+      (proj2
+         (Qlt_compat (e + (- e) * (1#2))%Q (e * (1#2))%Q Hsum
+            0%Q (0 * (1#2))%Q Hzero)
+         Hprod) as Hlt.
+    exact (Qlt_not_le _ _ Hlt He).
+  + intros e x y He. exact He.
+  + intros e x y Hnn.
+    destruct (Q_dec 0 e) as [[Hlt | Hgt] | Heq].
+    * apply Qlt_le_weak. exact Hlt.
+    * exfalso. apply Hnn. intros Hle.
+      exact (Qlt_not_le _ _ Hgt Hle).
+    * apply (proj2 (Qle_lteq 0 e)). right. exact Heq.
 Defined.
 
 Import Metric.
 
 Existing Instances PreO PreO.PreOrder_I.
 
-Lemma tt_cont : IGCont.pt Metric (fun _ : Ball MOne => True).
+Lemma tt_cont :
+  IGCont.pt (FormalSpace.IGS Metric) (fun _ : Ball MOne => True).
 Proof.
 constructor.
 - exists (tt, Qpos1). unfold In. auto.
@@ -78,6 +108,8 @@ Proof.
 unfold Lipschitz.
 simpl. intros. destruct x, x'.
 apply ball_refl.
+apply Qmult_le_0_compat.
+apply Qpossec.Qpos_nonneg. exact H.
 Qed.
 
 (** Applying this map to the unique point in the
@@ -86,7 +118,9 @@ Qed.
     [x: X] into its metric completion.
 *)
 Definition from_One_cont (x : X) :
-  IGCont.t (toPSL Metric) Metric 
+  IGCont.t
+    (toPSL (FormalSpace.IGS (@Metric MOne)))
+    (FormalSpace.IGS (@Metric X))
   (lift (fun _ : MOne => x) Qpos1).
 Proof.
 apply Cont. apply from_One_lip.
@@ -128,9 +162,10 @@ Proof.
   intros e a b0 b1 H [H1 H2].
   unfold Qball in *.
   unfold AbsSmall in *.
+  destruct H as [Hlo Hhi].
   split.
    apply Qle_trans with (b0-b1).
-    tauto.
+    exact Hlo.
    apply (minus_resp_leEq _ b0).
    assumption.
   apply Qle_trans with 0.
@@ -138,7 +173,14 @@ Proof.
    stepr b1.
     assumption.
    simpl; ring.
-  apply Qpos_nonneg.
+  assert (Hb : (b0 <= b1)%Q) by (eapply Qle_trans; eassumption).
+  assert (Hdiff : (b0 - b1 <= 0)%Q).
+  { apply (shift_minus_leEq _ b0).
+    stepr b1. exact Hb. simpl; ring. }
+  pose proof (Qle_trans _ _ _ Hlo Hdiff) as Hminus.
+  pose proof (Qopp_le_compat _ _ Hminus) as Hnonneg.
+  setoid_replace (- - e)%Q with e in Hnonneg by ring.
+  exact Hnonneg.
 Qed.
 
 
