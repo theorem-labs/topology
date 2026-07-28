@@ -23,16 +23,25 @@ Section Discrete.
 Universes A A'.
 Variable A : Type@{A}.
 
+Inductive discrete_eq (x : A) : A -> Type@{A} :=
+  discrete_eq_refl : discrete_eq x x.
+
 Definition DiscretePO@{} : PreOrder@{A A} :=
   {| PO_car := A
-   ; le := Logic.eq
+   ; le := discrete_eq
   |}.
 
-Instance discretePO@{} : PreO.t Logic.eq := PreO.discrete@{A A} A.
+Instance discretePO@{} : PreO.t discrete_eq.
+Proof.
+  constructor.
+  - intros x. constructor.
+  - intros x y z Hxy Hyz. destruct Hxy. exact Hyz.
+Qed.
 
 Set Printing Universes.
 
-Definition DiscI@{} : IGt@{A A A A'} := InfoBase.InfoBase@{A A A'} DiscretePO.
+Definition DiscI@{} : IGt@{A A A A'} :=
+  @InfoBase.InfoBase@{A A A'} DiscretePO discretePO.
 
 Definition Disc@{} : PreSpace.t :=
   {| PreSpace.S := DiscretePO
@@ -40,25 +49,29 @@ Definition Disc@{} : PreSpace.t :=
 
 Local Open Scope Subset.
 
+Lemma discrete_Ix_false s (i : InfoBase.Ix DiscretePO s) : False.
+Proof. destruct i. Qed.
+
 Lemma CovG_Cov a U : a <|[DiscI] U <--> In U a.
 Proof.
 split; intros H.
 - induction H. 
-  + simpl in *. subst. assumption.
-  + simpl in *. subst. assumption.
-  + induction i.
+  + simpl in *. assumption.
+  + simpl in *. destruct l. assumption.
+  + exact (False_rect _ (discrete_Ix_false _ i)).
 - apply FormTop.refl. assumption.
 Qed.
 
 Instance isCov@{} : FormTop.t Disc.
 Proof.
 econstructor; try (simpl; eauto).
-- intros. subst. eauto.
+- intros. destruct X. exact X0.
 - intros. split; unfold downset; exists a;
-  (assumption || reflexivity).
+  (assumption || constructor).
 Qed.
 
-Definition pt_ok (x : A) : Cont.pt Disc (eq x).
+Definition pt_ok (x : A) :
+  Cont.pt Disc (eq x).
 Proof.
 constructor.
 - econstructor. reflexivity.
@@ -114,7 +127,7 @@ Proof.
 constructor; simpl; intros.
 - destruct (Cont.pt_here (fpt a)).
   exists a0. constructor. assumption.
-- unfold pointwise in *. subst. assumption.
+- unfold pointwise in *. destruct X. assumption.
 - unfold pointwise in *.
   pose proof (Cont.pt_local (fpt a) X X0).
   destruct X1. destruct i. exists a0; assumption.
@@ -147,12 +160,13 @@ Theorem fContI (f : A -> B) :
 Proof.
 constructor; intros.
 - apply FormTop.refl. exists (f a); constructor.
-- unfold discrF in *. simpl in X. subst. reflexivity.
+- unfold discrF in *. simpl in X. destruct X. exact H.
 - inv H. inv H0. apply FormTop.refl. 
   exists (f a). split; le_down; simpl; reflexivity.
   reflexivity.
 - apply FormTop.refl. exists b; unfold In; auto. induction X; auto.
-  simpl in *. subst. apply IHX. assumption. induction i.
+  simpl in *. destruct l. apply IHX. assumption.
+  exact (False_rect _ (@Discrete.discrete_Ix_false B b i)).
 Qed.
 
 (** Same story here... *)
@@ -165,8 +179,8 @@ constructor.
 - intros. subst. econstructor.
   econstructor. reflexivity. induction X. 
   + assumption.
-  + simpl in *. subst. assumption.
-  + destruct i.
+  + simpl in *. destruct l. assumption.
+  + exact (False_rect _ (@Discrete.discrete_Ix_false A _ i)).
 Qed.
 
 (** This is only true for finitary products! *)
