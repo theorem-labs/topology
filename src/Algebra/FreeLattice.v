@@ -1,6 +1,7 @@
 Require Import 
   Algebra.SetsC
   Algebra.OrderC
+  Coq.Classes.CRelationClasses
   Algebra.PreOrder
   Types.List
   Coq.Lists.List.
@@ -14,6 +15,10 @@ Section FreeMeetLattice.
 
 Context {X : PreOrder}
         {POX : PreO.t (le X)}.
+Local Instance X_le_Reflexive : Reflexive (le X) :=
+  fun x => @PreO.le_refl _ _ POX x.
+Local Instance X_le_Transitive : Transitive (le X) :=
+  fun x y z => @PreO.le_trans _ _ POX x y z.
 
 Definition FreeML : PreOrder :=
   {| PO_car := list X
@@ -33,6 +38,10 @@ constructor; simpl; intros.
   econstructor. eassumption.
   etransitivity; eassumption.
 Qed.
+Local Instance FreeML_le_Reflexive : Reflexive (le FreeML) :=
+  fun x => @PreO.le_refl _ _ PO x.
+Local Instance FreeML_le_Transitive : Transitive (le FreeML) :=
+  fun x y z => @PreO.le_trans _ _ PO x y z.
 
 Lemma FSubset_le (xs ys : FreeML) : (ys ⊆ xs)%list -> xs <= ys.
 Proof.
@@ -111,10 +120,7 @@ Lemma le_app_l (ys ys' xs : FreeML)
   : ys <= ys' -> (ys ++ xs) <= (ys' ++ xs).
 Proof.
 intros H.
-rewrite (bmeet_comm ys).
-etransitivity.
-Focus 2. eapply le_app_r. eassumption.
-apply bmeet_comm.
+apply le_app_r. assumption.
 Qed.
 
 Lemma le_app_distr {xs xs' ys ys' : FreeML}

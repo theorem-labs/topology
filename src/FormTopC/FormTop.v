@@ -242,6 +242,10 @@ Definition toPSUL@{} : PreSpace.t@{A P I} :=
   |}.
 
 Context {PO : PreO.t@{A P} (le A)}.
+Local Instance A_le_Reflexive : Reflexive (le A) :=
+  fun x => @PreO.le_refl _ _ PO x.
+Local Instance A_le_Transitive : Transitive (le A) :=
+  fun x y z => @PreO.le_trans _ _ PO x y z.
 
 Lemma Lmore@{} a U : GCov a U -> GCovL a U.
 Proof.
@@ -485,6 +489,10 @@ Definition Localized@{} : PreISpace.t@{A P I} :=
   |}.
 
 Context {PO : PreO.t@{A P} (le A)}.
+Local Instance localized_le_Reflexive : Reflexive (le A) :=
+  fun x => @PreO.le_refl _ _ PO x.
+Local Instance localized_le_Transitive : Transitive (le A) :=
+  fun x y z => @PreO.le_trans _ _ PO x y z.
 
 
 
