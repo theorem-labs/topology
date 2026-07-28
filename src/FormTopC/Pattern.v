@@ -14,6 +14,18 @@ Local Open Scope FT.
 Section Patterns.
 
 Context {S T : FormalSpace.t}.
+Local Instance pattern_S_le_Reflexive :
+  CRelationClasses.Reflexive (le (PreSpace.S S)) :=
+  fun x => @PreO.le_refl _ _ (FormalSpace.PO S) x.
+Local Instance pattern_S_le_Transitive :
+  CRelationClasses.Transitive (le (PreSpace.S S)) :=
+  fun x y z => @PreO.le_trans _ _ (FormalSpace.PO S) x y z.
+Local Instance pattern_T_le_Reflexive :
+  CRelationClasses.Reflexive (le (PreSpace.S T)) :=
+  fun x => @PreO.le_refl _ _ (FormalSpace.PO T) x.
+Local Instance pattern_T_le_Transitive :
+  CRelationClasses.Transitive (le (PreSpace.S T)) :=
+  fun x y z => @PreO.le_trans _ _ (FormalSpace.PO T) x y z.
 
 (** Construct a continuous map by pasting together local
     continuous maps in a sheaf-like manner.

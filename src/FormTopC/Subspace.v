@@ -15,6 +15,12 @@ Set Universe Polymorphism.
 Existing Instances FormalSpace.FT FormalSpace.PreO
   FormalSpace.Cov_Proper FormalSpace.Cov_Proper2
   FormalSpace.Cov_Proper3.
+Local Instance subspace_le_Reflexive (A : FormalSpace.t) :
+  Reflexive (le (PreSpace.S A)) :=
+  fun x => @PreO.le_refl _ _ (FormalSpace.PO A) x.
+Local Instance subspace_le_Transitive (A : FormalSpace.t) :
+  Transitive (le (PreSpace.S A)) :=
+  fun x y z => @PreO.le_trans _ _ (FormalSpace.PO A) x y z.
 
 (** General properties of subspaces and their inclusions. *)
 
@@ -92,7 +98,8 @@ constructor; unfold CovC; intros.
   + rewrite l. apply FormalSpace.refl. left. assumption.
   + destruct i0. rewrite l0. apply FormalSpace.refl.
     left. assumption.
-    rewrite <- Union_Included_r.
+    eapply FormTop.monotone.
+    apply Union_Included_r.
     apply FormTop.le_right.
     * rewrite l. apply FormalSpace.refl. assumption.
     * rewrite l0. apply FormalSpace.refl. assumption.
@@ -132,7 +139,8 @@ constructor; simpl; unfold CovO; intros.
   Focus 2. intros a X2. destruct X2.
   destruct d, d0. destruct i.  le_downH d0. destruct d.
   eapply X0. eassumption.
-  split. exists a5. reflexivity. rewrite <- l3. assumption.
+  split. exists a5. reflexivity.
+  exact (@PreO.le_trans _ _ (FormalSpace.PO A) _ _ _ l1 l3).
   exists a4; assumption. 
   apply FormalSpace.le_right. apply FormalSpace.le_right.
   apply X. split. le_down. assumption.
