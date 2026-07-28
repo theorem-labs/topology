@@ -18,6 +18,12 @@ Module Lift.
 Section Lift.
 
 Variable (S : IGt).
+Local Instance lift_le_Reflexive :
+  CRelationClasses.Reflexive (PreOrder.le S) :=
+  fun x => @PreO.le_refl _ _ (IGPO S) x.
+Local Instance lift_le_Transitive :
+  CRelationClasses.Transitive (PreOrder.le S) :=
+  fun x y z => @PreO.le_trans _ _ (IGPO S) x y z.
 
 Definition lift_subset (U : Subset S) : Subset (option S) :=
   fun ms => match ms with
@@ -44,6 +50,12 @@ constructor; intros.
     constructor || contradiction || 
   (etransitivity ; eassumption) || eassumption.
 Qed. 
+Local Instance option_le_Reflexive :
+  CRelationClasses.Reflexive le :=
+  fun x => @PreO.le_refl _ _ PreO_le x.
+Local Instance option_le_Transitive :
+  CRelationClasses.Transitive le :=
+  fun x y z => @PreO.le_trans _ _ PreO_le x y z.
 
 Definition Ix (ma : option S) : Type := match ma with
   | Some a => PreISpace.Ix S a
