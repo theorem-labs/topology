@@ -30,6 +30,10 @@ Universes A P AP.
 Variable (S : PreOrder@{A P}).
 
 Context {PO : PreO.t@{A P} (le S)}.
+Local Instance info_le_Reflexive : Reflexive (le S) :=
+  fun x => @PreO.le_refl _ _ PO x.
+Local Instance info_le_Transitive : Transitive (le S) :=
+  fun x y z => @PreO.le_trans _ _ PO x y z.
 
 (** The axiom set essentially says that if [s <= t], then
     [s] is covered by the singleton set [{t}]. *)
@@ -137,7 +141,8 @@ Theorem contNM : forall (F : Cont.map S (InfoBase.IB T)),
 Proof.
 intros. constructor; intros.
 - unfold InfoBase.Cov. apply FormTop.refl.
-  apply (NMhere X).
+  destruct (NMhere X a) as [t Ht HF].
+  econstructor; eassumption.
 - eapply (NMle_left X); eassumption. 
 - unfold InfoBase.Cov. apply FormTop.refl. 
   pose proof (NMlocal X X0 X1).
@@ -379,7 +384,7 @@ constructor; unfold One_intro; intros; simpl; try auto.
   exists I. destruct b, c. unfold In. 
   apply (down_eq (A := toPSL One)). auto. auto. 
 - apply FormTop.refl. constructor 1 with I.
-  induction X. destruct a0. assumption.
+  induction H0. destruct a0. assumption.
   assumption.  destruct i. auto.
 Qed.
 
@@ -396,7 +401,7 @@ Module Sierpinski.
 
 Definition SierpPO : PreOrder :=
   {| PO_car := bool
-   ; le := Bool.leb |}.
+   ; le := Bool.le |}.
 
 Definition Sierp := InfoBase.IBInd SierpPO.
 

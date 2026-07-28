@@ -59,9 +59,9 @@ Arguments ExtSubset s {ix} C.
 
 Definition C'@{} : forall (p : ProdPO), Ix' p -> Subset@{A P} ProdPO :=
   fun p ix' => match ix' with
-  | Slice x ax xs => ExtSubset xs (PreISpace.C _ _ ax)
+  | Slice ax xs => ExtSubset xs (PreISpace.C _ _ ax)
   | DimUnion xs ix => @ExtSubset xs ix (fun _ => True)
-  | ProdStable ix a a' xs => @ExtSubset xs ix (eq a ↓ eq a')
+  | ProdStable a a' xs => @ExtSubset xs _ (eq a ↓ eq a')
   end.
 
 Definition Prod@{} : PreISpace.t@{A P I} :=
@@ -74,6 +74,17 @@ Instance Sum_PO : PreO.t (le (SomeOpen X)).
 Proof.
 unshelve eapply PreOrder.Sum_PO. eassumption.
 Qed.
+Local Instance Sum_le_Reflexive :
+  CRelationClasses.Reflexive (le (SomeOpen X)) :=
+  fun x => @PreO.le_refl _ _ Sum_PO x.
+Local Instance Sum_le_Transitive :
+  CRelationClasses.Transitive (le (SomeOpen X)) :=
+  fun x y z => @PreO.le_trans _ _ Sum_PO x y z.
+Local Instance Prod_PreO : PreO.t (le ProdPO) := ML.PO.
+Local Instance Prod_le_Reflexive : CRelationClasses.Reflexive (le ProdPO) :=
+  fun x => @PreO.le_refl _ _ Prod_PreO x.
+Local Instance Prod_le_Transitive : CRelationClasses.Transitive (le ProdPO) :=
+  fun x y z => @PreO.le_trans _ _ Prod_PreO x y z.
 
 Local Instance loc : 
   (forall ix, FormTop.localized (X ix)) 
@@ -168,9 +179,10 @@ Qed.
 Lemma t_proj (ix : Ix) : Cont.t Prodt (X ix) (proj ix).
 Proof.
 constructor; intros; unfold proj in *.
-- eapply FormTop.monotone. 2: apply slice_cov_top.
-  apply union_monotone.
-  intros out. apply downset_included.
+- eapply FormTop.monotone. 2: apply (slice_cov_top ix a).
+  intros z Hz. destruct Hz as [out Hout Heq].
+  econstructor 1 with out. exact Hout.
+  apply downset_included. exact Heq.
 - le_down. le_downH X1. etransitivity; eassumption.
 - le_downH X0. le_downH X1.
   pose proof (prod_stable ix b c a) as X2.

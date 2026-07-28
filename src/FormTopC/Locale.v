@@ -26,6 +26,12 @@ Import FormTop.
 Section ToFrame.
 Universe Variables A P X P'.
 Variable (A : FormalSpace.t@{A P X}).
+Local Instance locale_le_Reflexive :
+  CRelationClasses.Reflexive (le (PreSpace.S A)) :=
+  fun x => @PreO.le_refl _ _ (FormalSpace.PO A) x.
+Local Instance locale_le_Transitive :
+  CRelationClasses.Transitive (le (PreSpace.S A)) :=
+  fun x y z => @PreO.le_trans _ _ (FormalSpace.PO A) x y z.
 
 Definition T : Type@{P'} := Open (S A).
 
@@ -81,8 +87,8 @@ Theorem Sat_Intersection : forall U V,
   Sat (U ∩ V) ⊆ Sat U ∩ Sat V.
 Proof.
 intros. constructor; unfold Sat, In in *.
-  rewrite <- (Intersection_Included_l _ U V); eassumption.
-  rewrite <- (Intersection_Included_r _ U V); eassumption.
+  eapply FormTop.monotone. apply Intersection_Included_l. eassumption.
+  eapply FormTop.monotone. apply Intersection_Included_r. eassumption.
 Qed.
 
 Theorem Sat_Union : forall U V : Subset A,
@@ -90,8 +96,8 @@ Theorem Sat_Union : forall U V : Subset A,
 Proof.
 intros. unfold Included, pointwise_rel, arrow; intros a H. 
 destruct H; unfold In, Sat in *. 
-rewrite <- (Union_Included_l _ U V). assumption. 
-rewrite <- Union_Included_r. assumption. 
+eapply FormTop.monotone. apply Union_Included_l. assumption.
+eapply FormTop.monotone. apply Union_Included_r. assumption.
 Qed.
 
 Theorem Sat_mono : forall U, U ⊆ Sat U.
@@ -103,12 +109,12 @@ Qed.
 Theorem Sat_mono2 : forall U V, U ⊆ V -> Sat U ⊆ Sat V.
 Proof.
 intros U V H. unfold Included, pointwise_rel, arrow, Sat. 
-intros a X. rewrite <- H. assumption.
+intros a X. eapply FormTop.monotone. apply H. assumption.
 Qed.
 
 Theorem Cov_Sat : forall a U, iffT (a <|[A] U) (a <|[A] Sat U).
 Proof.
-intros. split; intros. rewrite <- Sat_mono. assumption.
+intros. split; intros. eapply FormTop.monotone. apply Sat_mono. assumption.
 etrans. assumption.
 Qed.
 
