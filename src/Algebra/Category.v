@@ -1,4 +1,5 @@
-Set Universe Polymorphism. 
+Set Universe Polymorphism.
+Unset Universe Minimization ToSet. 
 
 (** I will try to use the same names for the operations
     that there are in Coq *)

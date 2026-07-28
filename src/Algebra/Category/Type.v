@@ -3,6 +3,7 @@ Require Import
   Types.Setoid.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 
 Definition function@{A P} (A B : Type@{A}) : Setoid@{A P}.
 Proof.

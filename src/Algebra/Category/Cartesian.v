@@ -3,7 +3,8 @@ Require Import
   Types.Setoid
   Algebra.Category.
 
-Set Universe Polymorphism. 
+Set Universe Polymorphism.
+Unset Universe Minimization ToSet. 
 
 Local Open Scope obj.
 Local Open Scope morph.
@@ -54,7 +55,7 @@ Defined.
 
 
 Global Instance pair_Proper {Γ A B : U} 
- : Proper (seq _ ==> seq _ ==> seq _)%signature 
+ : Proper (seq _ ==> seq _ ==> seq _)%signatureT 
      (@pair Γ A B).
 Proof.
 Admitted.

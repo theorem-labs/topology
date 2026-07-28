@@ -4,6 +4,7 @@ Require Import
   Types.Setoid.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 
 Local Open Scope setoid.
 
@@ -60,7 +61,7 @@ Require Import
 
 Local Open Scope cat.
 
-Definition Type_Setoid : TypeC ==> SetoidC.
+Definition Type_Setoid@{i i' A'} : TypeC@{i i' i'} ==> SetoidC@{i' i' A'}.
 Proof.
 unshelve econstructor.
 - exact Leib.Leibniz.

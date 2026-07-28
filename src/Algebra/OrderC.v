@@ -6,10 +6,10 @@ Require Import
 
 Require Coq.Setoids.Setoid
   Coq.Bool.Bool
-  Coq.Arith.Le
-  Coq.Arith.Max.
+  Coq.Arith.PeanoNat.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 Generalizable All Variables.
 
 Definition prod_op {A B} (fA : crelation A) (fB : crelation B)
@@ -72,7 +72,7 @@ Module PreO.
 
   Arguments t {A} le.
 
-  Instance PreOrder_I `{tle : t A leA} : PreOrder leA.
+  #[global] Instance PreOrder_I `{tle : t A leA} : PreOrder leA.
   Proof.
   constructor.
   - unfold Reflexive. apply le_refl.
@@ -203,19 +203,19 @@ Module PreO.
   -> @sup _ leB _ (fun i => f (g i)) (f m).
 
   (** [True], the one-element type, has a trivial preorder *)
-  Definition one : t (fun (_ : True) _ => True).
+  Definition one@{A P} : t@{A P} (fun (_ : True) _ => True).
   Proof. constructor; auto.
   Qed.
 
   (** The preorder on booleans given by False < True *)
-  Definition two : t Bool.leb.
+  Definition two : t Bool.le.
   Proof. constructor. 
   - intros; auto. destruct x; simpl; trivial.
   - destruct x, y, z; auto. simpl in *. congruence.
   Qed.
 
   Definition Nat : t le.
-  Proof. constructor; [ apply Le.le_refl | apply Le.le_trans ].
+  Proof. constructor; [ apply PeanoNat.Nat.le_refl | apply PeanoNat.Nat.le_trans ].
   Qed.
 
   Definition discrete (A : Type) : t (@Logic.eq A).
@@ -267,7 +267,7 @@ Module PreO.
 
   (** The type of propositions forms a preorder, where "<=" is
       implication. *)
-  Local Instance prop : t (fun (P Q : Prop) => P -> Q).
+  Local Instance prop@{u p} : t@{u p} (fun (P Q : Prop) => P -> Q).
   Proof. 
     constructor; auto.
   Qed.
@@ -299,14 +299,15 @@ Section PO.
 Universes UA UP.
 
   Class t@{} {A : Type@{UA}} {le eq : crelation@{UA UP} A} : Type@{UP} :=
-  { PreO :> PreO.t le
+  { PreO :: PreO.t le
   ; le_proper : forall x x' y y', eq x x' -> eq y y' -> iffT (le x y) (le x' y')
   ; le_antisym : forall x y, le x y -> le y x -> eq x y
   }.
 
   Arguments t {A} le eq.
+  #[global] Existing Instance PreO.
 
-  Instance le_Proper `{t A leA eqA} : Proper (eqA ==> eqA ==> iffT) leA.
+  #[global] Instance le_Proper `{t A leA eqA} : Proper (eqA ==> eqA ==> iffT) leA.
   Proof.
   unfold Proper, respectful.
   intros. apply le_proper; assumption.
@@ -375,7 +376,7 @@ Universes UA UP.
 
   End Facts.
 
-  Instance t_equiv `{tA : t A leA eqA} : Equivalence eqA.
+  #[global] Instance t_equiv `{tA : t A leA eqA} : Equivalence eqA.
   Proof. 
     constructor; [apply eq_refl | apply eq_sym | apply eq_trans ].
   Qed.
@@ -395,13 +396,13 @@ Universes UA UP.
     - solve_proper.
   Qed.
 
-  Instance le_properI `(tA : t A leA eqA) 
+  #[global] Instance le_properI `(tA : t A leA eqA) 
     : Proper (eqA ==> eqA ==> iffT) leA.
   Proof. intros. apply le_Proper. Qed.
 
   (** Morphisms must respect the equality relations on both their
       source (domain) and target (codomain). *)
-  Instance morph_properI `(tA : t A leA eqA) `(tB : t B leB eqB) (f : A -> B)
+  #[global] Instance morph_properI `(tA : t A leA eqA) `(tB : t B leB eqB) (f : A -> B)
     : morph leA eqA leB eqB f -> Proper (eqA ==> eqB) f.
   Proof. 
     intros H. destruct H. unfold Proper, respectful. apply f_eq0. 
@@ -434,14 +435,14 @@ Universes UA UP.
   Arguments t {A} _ _.
   Arguments morph {A} _ _ {B} _ _ _.
 
-  Definition one : t (fun (_ : True) _ => True) (fun _ _ => True).
+  Definition one@{A P} : t@{A P} (fun (_ : True) _ => True) (fun _ _ => True).
   Proof. 
     constructor; intros; auto.
     - apply PreO.one.
     - unfold Proper, respectful, iffT. auto.
   Qed.
 
-  Definition two : t Bool.leb Logic.eq.
+  Definition two : t Bool.le Logic.eq.
   Proof. 
     constructor; intros. 
     - apply PreO.two. 
@@ -454,7 +455,7 @@ Universes UA UP.
   constructor; intros.
   - apply PreO.Nat.
   - firstorder; congruence.
-  - apply Le.le_antisym; assumption.
+  - apply PeanoNat.Nat.le_antisymm; assumption.
   Qed.
 
   Definition discrete (A : Type) : t (@Logic.eq A) Logic.eq.
@@ -465,7 +466,7 @@ Universes UA UP.
   - assumption.
   Qed.
 
-  Existing Instances t_equiv le_properI.
+  #[global] Existing Instances t_equiv le_properI.
 
   Definition product `(tA : t A leA eqA) `(tB : t B leB eqB) 
     : t (prod_op leA leB) (prod_op eqA eqB).
@@ -504,7 +505,7 @@ Universes UA UP.
   - unfold pointwise_op in *. split; simpl in *; intros. 
     rewrite <- X0. rewrite <- X. apply X1.
     rewrite X0. rewrite X. apply X1.
-  - unfold pointwise_op. eauto using le_antisym.
+  - unfold pointwise_op in *. intros a. apply le_antisym; auto.
   Qed.
 
   Definition morph_pointwise {A B C} `{tC : t C leC eqC} (f : B -> A)
@@ -556,14 +557,15 @@ Module JoinLat.
       a join semi-lattice? We need [le] and [eq] to be a partial order,
       and we need our [max] operation to actually implement a maximum. *)
   Class t {A : Type} {O : Ops A} : Type :=
-  { PO :> PO.t le eq
+  { PO :: PO.t le eq
   ; max_proper : Proper (eq ==> eq ==> eq) max
   ; max_ok : forall l r, PreO.max (le := le) l r (max l r)
   }.
 
   Arguments t : clear implicits.
+  #[global] Existing Instance PO.
 
-  Instance max_properI `(tA : t A)
+  #[global] Instance max_properI `(tA : t A)
     : Proper (eq ==> eq ==> eq) max.
   Proof. intros. apply max_proper. Qed.
 
@@ -600,18 +602,17 @@ Module JoinLat.
   Proof.
   intros. constructor; intros.
   - eapply PO.morph_compose; eapply f_PO; eassumption.
-  - rewrite <- (f_max X0). rewrite (f_eq X0). reflexivity.
-    apply (f_max X).
+  - etransitivity; [ apply (f_eq X0); apply (f_max X) | apply (f_max X0) ].
   Qed.
 
   (** Max is very boring for the one-point set *)
-  Definition one_ops : Ops True :=
+  Definition one_ops@{u} : Ops@{u u u} True :=
     {| le := fun _ _ => True
      ; eq := fun _ _ => True
      ; max := fun _ _ => I
     |}.
 
-  Definition one : t True one_ops.
+  Definition one@{u} : t@{u} True one_ops@{u}.
   Proof. 
   constructor; intros; auto; unfold Proper, respectful; simpl; auto.
   - apply PO.one. 
@@ -620,7 +621,7 @@ Module JoinLat.
 
   (** Max for booleans is the boolean OR. *)
   Definition two_ops : Ops bool :=
-    {| le := Bool.leb
+    {| le := Bool.le
      ; eq := Logic.eq
      ; max := orb
     |}.
@@ -645,12 +646,12 @@ Module JoinLat.
   Proof. constructor; intros.
   - apply PO.Nat.
   - solve_proper.
-  - constructor. simpl. apply Max.le_max_l. apply Max.le_max_r.
-    apply Max.max_lub.
+  - constructor. simpl. apply PeanoNat.Nat.le_max_l. apply PeanoNat.Nat.le_max_r.
+    apply PeanoNat.Nat.max_lub.
   Qed.
 
   (** Max for propositions is the propositional OR, i.e., disjunction *)
-  Local Instance prop_ops : Ops Prop :=
+  Local Instance prop_ops@{u} : Ops@{u u u} Prop :=
     {| le := fun P Q : Prop => P -> Q
      ; eq := fun P Q : Prop => P <-> Q
      ; max := fun P Q : Prop => P \/ Q
@@ -733,14 +734,15 @@ Module MeetLat.
   Arguments Ops : clear implicits.
 
   Class t {A : Type} {O : Ops A} : Type :=
-  { PO :> PO.t le eq
+  { PO :: PO.t le eq
   ; min_proper : Proper (eq ==> eq ==> eq) min
   ; min_ok : forall l r, PreO.min (le := le) l r (min l r)
   }.
 
   Arguments t : clear implicits.
+  #[global] Existing Instance PO.
 
-  Instance min_properI `(tA : t A)
+  #[global] Instance min_properI `(tA : t A)
     : Proper (eq ==> eq ==> eq) min.
   Proof. intros. apply min_proper. Qed.
 
@@ -807,7 +809,7 @@ Module MeetLat.
   apply PO.min_unique with a (min b c).
   - apply min_ok.
   - eapply (Datatypes.snd (PreO.min_assoc _ a b c _ _ _ _ _)). apply min_ok.
-  Unshelve. apply min_ok. apply min_ok.
+  Unshelve. all: first [ apply min_ok | apply PO.PreO ].
   Qed.
 
   Lemma min_idempotent : forall a, min a a === a.
@@ -818,13 +820,13 @@ Module MeetLat.
 
   End Props.
 
-  Definition one_ops : Ops True :=
+  Definition one_ops@{u} : Ops@{u u u} True :=
     {| le := fun _ _ => True
      ; eq := fun _ _ => True
      ; min := fun _ _ => I
     |}.
 
-  Definition one : t True one_ops.
+  Definition one@{u} : t@{u} True one_ops@{u}.
   Proof. 
   constructor; intros; auto; unfold Proper, respectful; simpl; auto.
   - apply PO.one. 
@@ -832,7 +834,7 @@ Module MeetLat.
   Qed.
 
   Definition two_ops : Ops bool :=
-    {| le := Bool.leb
+    {| le := Bool.le
      ; eq := Logic.eq
      ; min := andb
     |}.
@@ -847,7 +849,7 @@ Module MeetLat.
   end; simpl; auto)).
   Qed. 
 
-  Local Instance prop_ops : Ops Prop :=
+  Local Instance prop_ops@{u} : Ops@{u u u} Prop :=
     {| le := fun P Q : Prop => P -> Q
      ; eq := fun P Q : Prop => P <-> Q
      ; min := fun P Q : Prop => P /\ Q
@@ -911,7 +913,7 @@ Module MeetLat.
    Qed. 
 
   Lemma sc_monotone {A OA B OB} (tA : t A OA) (tB : t B OB) : forall (f : A -> B),
-      PreO.scott_cont f ->
+      PreO.scott_cont (leA := le) (leB := le) f ->
       forall x y : A, x <= y -> f x <= f y.
   Proof.
     intros f H x y xy. 
@@ -926,7 +928,7 @@ Module MeetLat.
     specialize (H X y).
     assert (@PreO.sup _ MeetLat.le _ g y).
     constructor.
-    intros. destruct i; simpl. assumption. reflexivity.
+    intros. destruct i; simpl. assumption. apply PreO.le_refl.
     intros m' X0. specialize (X0 false). simpl in X0.
     assumption.
     specialize (H X0).
@@ -953,12 +955,13 @@ Module Lattice.
   Arguments Ops : clear implicits.
 
   Class t {A : Type} {O : Ops A} : Type :=
-  { PO :> PO.t le eq
+  { PO :: PO.t le eq
   ; max_proper : Proper (eq ==> eq ==> eq) max
   ; max_ok : forall l r, PreO.max (le := le) l r (max l r)
   ; min_proper : Proper (eq ==> eq ==> eq) min
   ; min_ok : forall l r, PreO.min (le := le) l r (min l r)
   }.
+  #[global] Existing Instance PO.
 
   Arguments t : clear implicits.
 
@@ -968,10 +971,10 @@ Module Lattice.
      ; MeetLat.min := min
     |}.
 
-  Instance toMeetLatOps {A : Type} : Ops A -> MeetLat.Ops A
+  #[global] Instance toMeetLatOps {A : Type} : Ops A -> MeetLat.Ops A
     := toMeetLatOps'.
 
-  Instance toMeetLat {A : Type} {ops} : t A ops -> MeetLat.t A (toMeetLatOps ops).
+  #[global] Instance toMeetLat {A : Type} {ops} : t A ops -> MeetLat.t A (toMeetLatOps ops).
   Proof.
   intros. constructor.
   - apply PO.
@@ -985,10 +988,10 @@ Module Lattice.
      ; JoinLat.max := max
     |}.
 
-  Instance toJoinLatOps {A : Type} : Ops A -> JoinLat.Ops A
+  #[global] Instance toJoinLatOps {A : Type} : Ops A -> JoinLat.Ops A
     := toJoinLatOps'.
 
-  Instance toJoinLat {A : Type} {ops} : t A ops -> JoinLat.t A (toJoinLatOps ops).
+  #[global] Instance toJoinLat {A : Type} {ops} : t A ops -> JoinLat.t A (toJoinLatOps ops).
   Proof.
   intros. constructor.
   - apply PO.
@@ -996,11 +999,11 @@ Module Lattice.
   - apply max_ok.
   Qed.
 
-  Instance max_properI `(tA : t A)
+  #[global] Instance max_properI `(tA : t A)
     : Proper (eq ==> eq ==> eq) max.
   Proof. intros. apply max_proper. Qed.
 
-  Instance min_properI `(tA : t A)
+  #[global] Instance min_properI `(tA : t A)
     : Proper (eq ==> eq ==> eq) min.
   Proof. intros. apply min_proper. Qed.
 
@@ -1043,14 +1046,14 @@ Module Lattice.
     apply (f_min X).
   Qed.
 
-  Definition one_ops : Ops True :=
+  Definition one_ops@{u} : Ops@{u u u} True :=
     {| le := fun _ _ => True
      ; eq := fun _ _ => True
      ; max := fun _ _ => I
      ; min := fun _ _ => I
     |}.
 
-  Definition one : t True one_ops.
+  Definition one@{u} : t@{u} True one_ops@{u}.
   Proof. 
   constructor; intros; auto; unfold Proper, respectful; simpl; auto.
   - apply PO.one. 
@@ -1059,7 +1062,7 @@ Module Lattice.
   Qed.
 
   Definition two_ops : Ops bool :=
-    {| le := Bool.leb
+    {| le := Bool.le
      ; eq := Logic.eq
      ; max := orb
      ; min := andb
@@ -1075,7 +1078,7 @@ Module Lattice.
   end; simpl; auto)).
   Qed. 
 
-  Local Instance prop_ops : Ops Prop :=
+  Local Instance prop_ops@{u} : Ops@{u u u} Prop :=
     {| le := fun P Q : Prop => P -> Q
      ; eq := fun P Q : Prop => P <-> Q
      ; max := fun P Q : Prop => P \/ Q

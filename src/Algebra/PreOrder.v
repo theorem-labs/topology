@@ -6,6 +6,7 @@ Require Import
   Types.UIP.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 
 Local Open Scope Subset.
 
@@ -55,7 +56,7 @@ intros. unfold Included, In, pointwise_rel, arrow.
 firstorder. unfold downset. exists a0. apply X. assumption. assumption.
 Qed.
 
-Instance downset_Proper : Proper (Same_set ==> Same_set) (@downset A).
+#[global] Instance downset_Proper : Proper (Same_set ==> Same_set) (@downset A).
 Proof.
 unfold Proper, respectful. intros.
 apply Same_set_Included in X. destruct X. 
@@ -217,7 +218,7 @@ Definition MkSomeOpen (ix : Ix) (u : X ix) : SomeOpen
 
 Context {PO : forall ix : Ix, PreO.t (le (X ix))}.
 
-Instance Sum_PO : PreO.t SomeOpen_le.
+#[global] Instance Sum_PO : PreO.t SomeOpen_le.
 Proof.
 constructor; simpl; intros.
 - destruct x. econstructor. reflexivity.

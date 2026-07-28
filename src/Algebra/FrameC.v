@@ -7,6 +7,7 @@ Require Import
 Require Algebra.SetsC.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 Set Asymmetric Patterns.
 
 Module L := Lattice.
@@ -53,15 +54,16 @@ Universes UI UA.
       the top element, so we'll ask for it explicitly. *)
 
   Class Ops {A : Type@{UA}} :=
-   { LOps :> L.Ops A
+   { LOps :: L.Ops A
    ; top : A
    ; sup : forall {Ix : Type@{UI}}, (Ix -> A) -> A
    }.
 
+  #[global] Existing Instance LOps.
   Arguments Ops : clear implicits.
 
   Class t {A : Type@{UA}} {OA : Ops A}: Type :=
-  { L :> L.t A LOps
+  { L :: L.t A LOps
   ; top_ok : PreO.top (le := L.le) top
   ; sup_proper : forall {Ix : Type},
      Proper (pointwise_relation _ L.eq ==> L.eq) (@sup _ _ Ix)
@@ -71,6 +73,7 @@ Universes UI UA.
   }.
 
   Arguments t : clear implicits.
+  #[global] Existing Instance L.
   Section Facts.
   Context {A : Type@{UA}} {OA} {tA : t A OA}.
 
@@ -348,7 +351,7 @@ Qed.
   ). eapply morph_compose; eapply cont.
   Defined.
 
-  Existing Instances type_ops type.
+  #[global] Existing Instances type_ops type.
 
   Definition point_cov {A OA} {tA : t A OA}
     (f : point OA) {U : A} {Ix} {V : Ix -> A}
@@ -387,8 +390,8 @@ Generalizable All Variables.
 (** [dot] is a binary operation which is commutative, idempotent, and
     associative. It is effectively a max or min. *)
 Class t {A} {eq : A -> A -> Prop} {dot : A -> A -> A} :=
-  { eq_equiv :> Equivalence eq
-  ; dot_proper :> Proper (eq ==> eq ==> eq) dot
+  { eq_equiv :: Equivalence eq
+  ; dot_proper :: Proper (eq ==> eq ==> eq) dot
   ; dot_idempotent : forall a, eq (dot a a) a
   ; dot_comm : forall a b, eq (dot a b) (dot b a)
   ; dot_assoc : forall a b c, eq (dot a (dot b c)) (dot (dot a b) c)
@@ -396,18 +399,19 @@ Class t {A} {eq : A -> A -> Prop} {dot : A -> A -> A} :=
 
 Arguments t : clear implicits.
 
+#[global] Existing Instances eq_equiv dot_proper.
 Section Facts.
 Context `{tA : t A eql dot}.
 
 (** Here we define a "<=" relation which makes the [dot] a
     [min] operation for a meet semi-lattice *)
-Definition ops : MeetLat.Ops A :=
+Definition ops@{u} : MeetLat.Ops@{u u u} A :=
   {| MeetLat.le := fun x y => eql (dot x y) x
    ; MeetLat.eq := eql
    ; MeetLat.min := dot
   |}.
 
-Instance ops' : MeetLat.Ops A := ops.
+#[global] Instance ops' : MeetLat.Ops A := ops.
 
 (** Next, we prove successively, that these definitions using
     the [dot] operator indeed define a preorder, a partial order,
@@ -431,7 +435,7 @@ constructor.
   rewrite dot_comm. reflexivity.
 Qed.
 
-Instance asMeetLat : MeetLat.t A ops.
+#[global] Instance asMeetLat : MeetLat.t A ops.
 Proof.
 constructor. 
 - apply asPO.

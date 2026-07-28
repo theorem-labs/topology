@@ -1,6 +1,7 @@
 Require Import Prob.StdLib Coq.Classes.CRelationClasses.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 
 Delimit Scope Subset_scope with Subset.
 Local Open Scope Subset.
@@ -93,8 +94,9 @@ intros. apply Included_impl; intros.
 destruct X. destruct i. constructor; econstructor; eassumption.
 Qed.
 
-Lemma union_eq A B (x: A) (f : A -> Subset B) :
-  union (eq x) f ⊆ f x.
+Lemma union_eq@{uA uB pA pB} (A : Type@{uA}) (B : Type@{uB}) (x: A)
+  (f : A -> Subset@{uB pB} B) :
+  union@{uA uB pA pB} (eq x) f ⊆ f x.
 Proof.
 apply Included_impl; intros.
 destruct X. induction i. assumption.
@@ -145,21 +147,21 @@ Qed.
 
 Require Import CMorphisms.
 
-Instance Intersection_Proper_le : forall U,
+#[global] Instance Intersection_Proper_le : forall U,
   Proper (Included ==> Included ==> Included) (@Intersection U).
 Proof.
 intros. unfold Proper, respectful.
 firstorder.
 Qed.
 
-Instance Intersection_Proper : forall U,
+#[global] Instance Intersection_Proper : forall U,
   Proper (Same_set ==> Same_set ==> Same_set) (@Intersection U).
 Proof.
 intros. unfold Proper, respectful.
 firstorder.
 Qed.
 
-Instance Union_Proper_le : forall U,
+#[global] Instance Union_Proper_le : forall U,
   Proper (Included ==> Included ==> Included) (@Union U).
 Proof.
 intros. unfold Proper, respectful.
@@ -167,43 +169,43 @@ firstorder.
 Qed.
 
 Set Printing Universes.
-Instance Included_Reflexive@{A P AP'} : forall U, Reflexive@{AP' AP'} (@Included@{A P} U).
+#[global] Instance Included_Reflexive@{A P AP'} : forall U, Reflexive@{AP' AP'} (@Included@{A P} U).
 Proof.
 intros. unfold Reflexive. firstorder.
 Qed.
 
-Instance Included_Transitive@{A P AP'} : forall U, Transitive@{AP' AP'} (@Included@{A P} U).
+#[global] Instance Included_Transitive@{A P AP'} : forall U, Transitive@{AP' AP'} (@Included@{A P} U).
 Proof.
 intros. unfold Transitive. firstorder.
 Qed.
 
-Instance Included_subrelation : forall U, subrelation (@Same_set U) (@Included U).
+#[global] Instance Included_subrelation : forall U, subrelation (@Same_set U) (@Included U).
 Proof.
 intros. unfold subrelation. firstorder.
 Qed.
 
-Instance Included_Proper : forall U, Proper (@Same_set U ==> @Same_set U ==> iffT)
+#[global] Instance Included_Proper : forall U, Proper (@Same_set U ==> @Same_set U ==> iffT)
   (@Included U).
 Proof.
 intros. unfold Proper, respectful. firstorder.
 Qed.
 
 Require RelationClasses.
-Instance RelIncl_PreOrder : forall A B, PreOrder (@RelIncl A B).
+#[global] Instance RelIncl_PreOrder : forall A B, PreOrder (@RelIncl A B).
 Proof.
 intros. constructor; unfold Reflexive, Transitive, RelIncl; intros.
 - reflexivity. 
 - transitivity (y a); auto.
 Qed.
 
-Instance Same_set_Equivalence@{A P AP AP'} : 
+#[global] Instance Same_set_Equivalence@{A P AP AP'} : 
   forall U, Equivalence@{AP' AP} (@Same_set@{A P AP} U).
 Proof. intros. unfold Same_set. constructor;
   unfold Reflexive, Symmetric, Transitive; firstorder.
 Qed.
 
 
-Instance RelSame_Equivalence : forall A B, Equivalence (@RelSame A B).
+#[global] Instance RelSame_Equivalence : forall A B, Equivalence (@RelSame A B).
 Proof. intros. unfold RelSame. constructor;
   unfold Reflexive, Symmetric, Transitive; intros.
 - reflexivity.
@@ -212,7 +214,7 @@ Proof. intros. unfold RelSame. constructor;
 Qed.
 
 Require Coq.Setoids.Setoid.
-Instance RelIncl_Proper : forall A B, Proper (RelSame ==> RelSame ==> iffT)
+#[global] Instance RelIncl_Proper : forall A B, Proper (RelSame ==> RelSame ==> iffT)
   (@RelIncl A B).
 Proof.
 intros. unfold Proper, respectful, RelIncl, RelSame. intros. 
@@ -255,7 +257,7 @@ Proof.
 firstorder.
 Qed.
 
-Instance RelSame_Proper : forall A B, Proper (RelSame ==> RelSame ==> iffT)
+#[global] Instance RelSame_Proper : forall A B, Proper (RelSame ==> RelSame ==> iffT)
   (@RelSame A B).
 Proof.
 intros. unfold Proper, respectful, RelSame. intros. split; intros.
@@ -302,7 +304,7 @@ Proof.
   firstorder.
 Qed.
 
-Instance Union_Proper_le_flip : forall A,
+#[global] Instance Union_Proper_le_flip : forall A,
   Proper (Included --> Included --> flip Included) (@Union A).
 Proof.
   firstorder.
@@ -315,14 +317,14 @@ Proof.
 apply Same_set_iff.
 Qed.
 
-Instance In_Proper : forall A,
+#[global] Instance In_Proper : forall A,
   Proper (Included ==> eq ==> arrow) (@In A).
 Proof.
 unfold Proper, respectful, arrow. intros.
 subst.  apply X. assumption.
 Qed.
 
-Instance In_Proper2 : forall A, 
+#[global] Instance In_Proper2 : forall A, 
   Proper (Included --> eq --> flip arrow) (@In A).
 Proof.
 unfold Proper, respectful, flip, arrow. intros.
@@ -334,7 +336,7 @@ Proof.
 intros. destruct X0. exists a.  apply X. assumption.
 Qed.
 
-Instance Inhabited_Proper_le {A} : Proper (Included ==> arrow) (@Inhabited A).
+#[global] Instance Inhabited_Proper_le {A} : Proper (Included ==> arrow) (@Inhabited A).
 Proof.
 unfold Proper, respectful, arrow. intros. eapply Inhabited_mono; eassumption.
 Qed.

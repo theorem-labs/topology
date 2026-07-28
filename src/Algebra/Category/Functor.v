@@ -3,6 +3,7 @@ Require Import
   Algebra.Category.
 
 Set Universe Polymorphism.
+Unset Universe Minimization ToSet.
 
 Local Open Scope obj.
 Local Open Scope morph.
