@@ -155,11 +155,15 @@ Inductive eq {A} {x : A} : A -> Type :=
 Arguments eq {A} x y.
 *)
 
-Definition Leibniz (A : Type) : Setoid.
+Definition Leibniz@{u p} (A : Type@{u}) : Setoid@{u p}.
 Proof.
 unshelve eapply (
   {| sty := A
    ; seq := eq |}).
+constructor.
+- intros x. reflexivity.
+- intros x y H. symmetry. assumption.
+- intros x y z H1 H2. etransitivity; eassumption.
 Defined.
 
 Definition Leibniz_func {A B} (f : A -> B)

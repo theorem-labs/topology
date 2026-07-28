@@ -54,7 +54,7 @@ Defined.
 
 
 Global Instance pair_Proper {Γ A B : U} 
- : Proper (seq _ ==> seq _ ==> seq _)%signature 
+ : Proper (seq _ ==> seq _ ==> seq _)%signatureT
      (@pair Γ A B).
 Proof.
 Admitted.

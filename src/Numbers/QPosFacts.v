@@ -1,5 +1,6 @@
 Require Import
   Numbers.QFacts
+  CoRN.model.structures.Qpossec
   CoRN.model.structures.QposInf.
 
 Set Universe Polymorphism.
@@ -127,7 +128,7 @@ Definition Qpossmaller (q : QposInf) : Qpos := match q with
   end.
 
 Definition Qpossmaller_prf : forall (q : QposInf),
-  QposInf_le (Qpossmaller q) q.
+  QposInf_le (Qpos2QposInf (Qpossmaller q)) q.
 Proof.
 intros. unfold QposInf_le, Qpossmaller. destruct q; auto.
 apply Qle_refl.

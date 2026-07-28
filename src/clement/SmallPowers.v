@@ -18,6 +18,7 @@ Proof.
 Qed.
 
 Require Import Qpower.
+Require Import Coq.ZArith.Znat.
 
 Lemma power_more_than_linear_util:
   forall (q a : Q) (n : nat),
@@ -56,7 +57,7 @@ Qed.
 Lemma power_large_util'' :
   forall b a, (b > 0 -> exists n, a < S n * b)%nat.
 Proof.
-  intros; exists a; induction a; simpl in *; omega.
+  intros; exists a; induction a; simpl in *; lia.
 Qed.
 
 Lemma power_large_util' (q epsilon: Q):

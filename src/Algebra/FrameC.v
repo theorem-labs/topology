@@ -53,7 +53,7 @@ Universes UI UA.
       the top element, so we'll ask for it explicitly. *)
 
   Class Ops {A : Type@{UA}} :=
-   { LOps :> L.Ops A
+   { LOps :: L.Ops A
    ; top : A
    ; sup : forall {Ix : Type@{UI}}, (Ix -> A) -> A
    }.
@@ -61,7 +61,7 @@ Universes UI UA.
   Arguments Ops : clear implicits.
 
   Class t {A : Type@{UA}} {OA : Ops A}: Type :=
-  { L :> L.t A LOps
+  { L :: L.t A LOps
   ; top_ok : PreO.top (le := L.le) top
   ; sup_proper : forall {Ix : Type},
      Proper (pointwise_relation _ L.eq ==> L.eq) (@sup _ _ Ix)
@@ -387,8 +387,8 @@ Generalizable All Variables.
 (** [dot] is a binary operation which is commutative, idempotent, and
     associative. It is effectively a max or min. *)
 Class t {A} {eq : A -> A -> Prop} {dot : A -> A -> A} :=
-  { eq_equiv :> Equivalence eq
-  ; dot_proper :> Proper (eq ==> eq ==> eq) dot
+  { eq_equiv :: Equivalence eq
+  ; dot_proper :: Proper (eq ==> eq ==> eq) dot
   ; dot_idempotent : forall a, eq (dot a a) a
   ; dot_comm : forall a b, eq (dot a b) (dot b a)
   ; dot_assoc : forall a b c, eq (dot a (dot b c)) (dot (dot a b) c)
